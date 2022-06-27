@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // twoSum
+  // 1.暴力解法
+  /**
+   * @param {number[]} nums
+   * @param {number} target
+   * @return {number[]}
+   */
+  var twoSum = function (nums, target) {
+    // 两层循环
+    for (let i = 0; i < nums.length; i++) {
+      for (let j = i + 1; j < nums.length; j++) {
+        if (nums[i] + nums[j] === target) {
+          return [i, j];
+        }
+      }
+    }
+    return [-1, -1];
+  };
+
+  // 2.hashmap解法
+  var twoSum = function (nums, target) {
+    // 定义hashmap
+    const hashMap = {};
+    // 循环数组
+    for(let i = 0; i < nums.length; i++) {
+      const diff = target - nums[i];
+      if (hashMap[diff] != undefined) {
+        return [hashMap[diff], i];
+      }
+      // 数组元素为key，数组下标为value存到hashMap中
+      hashMap[nums[i]] = i;
+    }
+    return [-1, -1];
+  };
+
+  var twoSum = function (nums, target) {
+    // 定义hashmap
+    const hashMap = new Map();
+    // 循环数组
+    for(let i = 0; i < nums.length; i++) {
+      const diff = target - nums[i];
+      if (hashMap.has(diff)) {
+        return [hashMap.get(diff), i];
+      }
+      // 数组元素为key，数组下标为value存到hashMap中
+      hashMap.set(nums[i], i)
+    }
+    return [-1, -1];
+  };
+</script>
+
+</html>
