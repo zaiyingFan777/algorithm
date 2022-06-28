@@ -19,7 +19,7 @@
    * @param {number} target
    * @return {number[]}
    */
-  var twoSum = function (nums, target) {
+  var twoSum1 = function (nums, target) {
     // 两层循环
     for (let i = 0; i < nums.length; i++) {
       for (let j = i + 1; j < nums.length; j++) {
@@ -32,7 +32,8 @@
   };
 
   // 2.hashmap解法
-  var twoSum = function (nums, target) {
+  // 这样，由于哈希表的查询时间为 O(1)，算法的时间复杂度降低到 O(N)，但 是需要 O(N) 的空间复杂度来存储哈希表
+  var twoSum2 = function (nums, target) {
     // 定义hashmap
     const hashMap = {};
     // 循环数组
@@ -47,7 +48,7 @@
     return [-1, -1];
   };
 
-  var twoSum = function (nums, target) {
+  var twoSum3 = function (nums, target) {
     // 定义hashmap
     const hashMap = new Map();
     // 循环数组
@@ -61,6 +62,130 @@
     }
     return [-1, -1];
   };
+
+
+  // twosun2
+  // 这里我们稍微修改一下上面的问题，我们设计一个类，拥有两个api:
+  class TwoSum {
+    constructor() {
+      // 我们仿照twosum使用一个哈希表辅助find方法
+      this.freq = new Map(); // freq：频率
+    }
+    // 向数据结构中添加一个数number
+    add(number) {
+      // 记录number出现的次数
+      this.freq.set(number, (this.freq.get(number) || 0) + 1);
+    }
+    // 寻找当前数据结构中是否存在两个数的和为value
+    find(value) {
+      // ps: 积累
+      // map：set存，has检查，get获取，keys获取key的集合
+      // // 拿到map(this.freq)的key值的集合
+      // const keyList = [];
+      // for(const key of this.freq.keys()) {
+      //   keyList.push(key);
+      // }
+      // 遍历map的key，
+      for(const key of this.freq.keys()) {
+        // value - key 为要寻找的值
+        const other = value - key;
+        // 情况一：other为key本身[3,3,2,5]执行find(6)
+        if (other === key && this.freq.get(key) > 1) { 
+          // 如果other等于key，并且key出现的频率大于1
+          return true;
+        }
+        // 情况二：[3,3,2,5]，执行find(7)，那么key为2，other为5时算法可以返回true
+        if (other !== key && this.freq.has(other)) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+  console.log('-------------------------------');
+  var twoSum4 = function (nums, target) {
+    const ts = new TwoSum();
+    for(const num of nums) {
+      ts.add(num);
+    }
+    return ts.find(target);
+  }
+  const nums = [3,3,2,5];
+  console.log(twoSum4(nums, 6));
+  // const nums = [3,3,2,5];
+  // console.log(twoSum4(nums, 7));
+  console.log('-------------------------------');
+  // 对于这个解法的时间复杂度呢， add⽅法是 O(1)， find⽅法是 O(N)，空间复杂度为 O(N)，和上⼀道题⽬⽐较类似。
+  // 但是对于 API 的设计，是需要考虑现实情况的。⽐如说，我们设计的这个 类，使⽤ find ⽅法⾮常频繁，那么每次都要O(N)的时间，岂不是很浪费时间吗？对于这种情况，我们是否可以做些优化呢？
+  // 是的，对于频繁使⽤ find ⽅法的场景，我们可以进⾏优化。我们可以参 考上⼀道题⽬的暴⼒解法，借助哈希集合来针对性优化 find ⽅法：
+  class TwoSum2 {
+    constructor() {
+      this.sum = new Set();
+      this.nums = [];
+    }
+
+    // 积累：Set(不会重复)，add添加，has检查，delete删除
+    add(number) {
+      // 记录所有可能组成的和
+      // 循环Nums，然后将num和number相加得到的和，存到set中
+      for(const num of this.nums) {
+        this.sum.add(num + number);
+      }
+      this.nums.push(number);
+    }
+
+    // find
+    find(value) {
+      return this.sum.has(value);
+    }
+  }
+  // 这样 sum 中就储存了所有加⼊数字可能组成的和，每次find只要花费O(1)的时间在集合中判断⼀下是否存在就⾏了，显然⾮常适合频繁使⽤ find 的场景。
+  console.log('-------------------------------');
+  var twoSum5 = function (nums, target) {
+    const ts = new TwoSum2();
+    for(const num of nums) {
+      ts.add(num);
+    }
+    console.log(ts)
+    return ts.find(target);
+  }
+  const nums2 = [3,3,2,5];
+  console.log(twoSum5(nums2, 6));
+  // const nums2 = [3,3,2,5];
+  // console.log(twoSum5(nums2, 7));
+  console.log('-------------------------------');
+
+  // 总结
+  // 对于twosum问题，一个难点就是给的数组无序，对于一个无序的数组，我们似乎什么技巧也没有，只能暴力穷举所有可能。
+  // ⼀般情况下，我们会⾸先把数组排序再考虑双指针技巧。TwoSum 启发我 们，HashMap 或者 HashSet 也可以帮助我们处理⽆序数组相关的简单问题。
+  // 另外，设计的核⼼在于权衡，利⽤不同的数据结构，可以得到⼀些针对性的加强。
+  // 最后，如果 TwoSum I 中给的数组是有序的，应该如何编写算法呢？答案很 简单，前⽂「双指针技巧汇总」写过：
+  var twoSum6 = function(nums, target) { // nums为有序数组
+    // 先找到最初的两个前后指针
+    let left = 0, right = nums.length - 1;
+    // 循环结束条件left >= right，为啥不能=，因为=说明两个指针指向同一个数组元素，但是要求是两个不同的元素
+    while(left < right) {
+      // 找到和
+      const sum = nums[left] + nums[right];
+      // 比较sum和target
+      if (sum === target) {
+        // 相等，即返回left和right
+        return [left, right];
+      } else if (sum < target) {
+        // 如果sum小于target，说明left需要变大
+        left++;
+      } else if (sum > target) {
+        // 如果sum大于target，说明right需要变小
+        right--;
+      }
+    }
+    return [-1, -1];
+  }
+  console.log('-------------------------------');
+  const nums3 = [2, 3, 3, 5];
+  console.log(twoSum6(nums3, 8));
+  console.log(twoSum6(nums3, 6));
+  console.log('-------------------------------');
 </script>
 
 </html>
