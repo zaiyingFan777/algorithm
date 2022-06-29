@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // 切片
 // https://blog.csdn.net/qq_45701131/article/details/113005736?spm=1001.2101.3001.6661.1&utm_medium=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-1-113005736-blog-123848327.pc_relevant_antiscanv4&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-1-113005736-blog-123848327.pc_relevant_antiscanv4&utm_relevant_index=1
 // https://blog.csdn.net/m0_59439550/article/details/123848327
@@ -56,6 +58,21 @@ func preorderTraversal(root *TreeNode) []int {
 	return res
 }
 
+type User struct {
+	Name string
+}
+
+// test和test2最大的问题就是如果不传指针就不能修改原本的数据，类似于生成了局部变量，只修改局部的user
+func test(user User) {
+	user.Name = "校长"
+	fmt.Println(user.Name)
+}
+
+func test2(user *User) {
+	user.Name = "小黄"
+	fmt.Println(user.Name)
+}
+
 func main() {
 	// 数组的push
 	// var s []int
@@ -76,4 +93,11 @@ func main() {
 	// res = append(res, 1)
 	// test()
 	// fmt.Println(res)
+
+	user := User{"小明"}
+	test(user)
+	fmt.Println(user.Name)
+	test2(&user)
+	test(user)
+	fmt.Println(user.Name)
 }
