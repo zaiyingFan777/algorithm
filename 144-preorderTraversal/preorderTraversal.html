@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+</body>
+<script>
+  // 144. 二叉树的前序遍历
+  // 给你二叉树的根节点 root ，返回它节点值的 前序 遍历。
+  // 示例：
+  // 输入：root = [1,null,2,3]
+  // 输出：[1,2,3]
+
+  // 输入：root = []
+  // 输出：[]
+
+  // 输入：root = [1]
+  // 输出：[1]
+
+  // 输入：root = [1,2]
+  // 输出：[1,2]
+
+  // 输入：root = [1,null,2]
+  // 输出：[1,2]
+
+  // 提示：
+  // 树中节点数目在范围 [0, 100] 内
+  // -100 <= Node.val <= 100
+
+  // 进阶：递归算法很简单，你可以通过迭代算法完成吗？
+
+  /**
+   * “二叉树的前序遍历的记忆法则是“根左右",即先遍历根节点,再遍历左子树节点,再遍历右子树节点。”
+   * “二叉树的中序遍历的记忆法则是“左根右"，即先遍历左子树节点，再遍历根节点，再遍历右子树节点。”
+   * “二叉树的后序遍历的记忆法则是“左右根"，即先遍历左子树节点，再遍历右子树节点，最后遍历根节点。”
+  */
+
+  /**
+   * Definition for a binary tree node.
+   * function TreeNode(val, left, right) {
+   *     this.val = (val===undefined ? 0 : val)
+   *     this.left = (left===undefined ? null : left)
+   *     this.right = (right===undefined ? null : right)
+   * }
+   */
+  /**
+   * @param {TreeNode} root
+   * @return {number[]}
+   */
+  var preorderTraversal = function(root) {
+    const res = [];
+    // 递归
+    preorder(root, res);
+    return res;
+  };
+
+  var preorder = function(root, res) {
+    // 找到递归的出口
+    if (root === null) return;
+    // 前序遍历，根左右
+    res.push(root.val);
+    preorder(root.left, res);
+    preorder(root.right, res);
+  }
+</script>
+</html>
