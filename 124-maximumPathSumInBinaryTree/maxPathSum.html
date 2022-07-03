@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 124最大路径和
+  /**
+   * Definition for a binary tree node.
+   * function TreeNode(val, left, right) {
+   *     this.val = (val===undefined ? 0 : val)
+   *     this.left = (left===undefined ? null : left)
+   *     this.right = (right===undefined ? null : right)
+   * }
+   */
+  /**
+   * @param {TreeNode} root
+   * @return {number}
+   */
+  var maxPathSum = function (root) {
+    // 返回结果
+    var maxSum = -Infinity;
+    // 定义最大贡献的函数
+    var maxGain = function(node) {
+      if (node === null) return 0;
+      var leftGain = Math.max(0, maxGain(node.left));
+      var rightGain = Math.max(0, maxGain(node.right));
+      var priceNewPath = node.val + leftGain + rightGain;
+      maxSum = Math.max(maxSum, priceNewPath);
+      return node.val + Math.max(leftGain, rightGain);
+    };
+    maxGain(root);
+    return maxSum;
+  };
+</script>
+
+</html>
