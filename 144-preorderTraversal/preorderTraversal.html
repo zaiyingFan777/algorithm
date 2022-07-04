@@ -52,6 +52,7 @@
    * @param {TreeNode} root
    * @return {number[]}
    */
+  // 传递数组版
   var preorderTraversal = function(root) {
     const res = [];
     // 递归
@@ -66,6 +67,43 @@
     res.push(root.val);
     preorder(root.left, res);
     preorder(root.right, res);
+  }
+  // 非传递数组版
+  var preorderTraversal = function(root) {
+    var res = [];
+    var preorder = function(node) {
+      // 找到递归的出口
+      if (node === null) return;
+      // 前序遍历，根左右，
+      res.push(node.val);
+      preorder(node.left);
+      preorder(node.right);
+    }
+    // 递归
+    preorder(root, res);
+    return res;
+  };
+
+  // while版本，通过栈结构后入先出，将Node.val添加到res数组中，效果跟递归版本是一样的
+  var preorderTraversal = function(root) {
+    var res = [];
+    if  (!root) return res;
+    // 定义栈结构
+    var stack = [root];
+    while(stack.length !== 0) {
+      var node = stack.pop();
+      // 先序遍历根左右
+      res.push(node.val);
+      // 先将right放到stack中
+      if (node.right) {
+        stack.push(node.right);
+      }
+      // 再将left放到stack中
+      if (node.left) {
+        stack.push(node.left);
+      }
+    }
+    return res;
   }
 </script>
 </html>
