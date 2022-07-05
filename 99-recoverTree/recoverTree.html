@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 二叉查找树（Binary Search Tree），（又：二叉搜索树，二叉排序树）它或者是一棵空树，或者是具有下列性质的二叉树： 
+  // 若它的左子树不空，则左子树上所有结点的值均小于它的根结点的值； 若它的右子树不空，则右子树上所有结点的值均大于它的根结点的值； 
+  // 它的左、右子树也分别为二叉排序树。二叉搜索树作为一种经典的数据结构，它既有链表的快速插入与删除操作的特点，
+  // 又有数组快速查找的优势；所以应用十分广泛，例如在文件系统和数据库系统一般会采用这种数据结构进行高效率的排序与检索操作。
+
+  // 99. 恢复二叉搜索树
+  // 给你二叉搜索树的根节点 root ，该树中的 恰好 两个节点的值被错误地交换。请在不改变其结构的情况下，恢复这棵树 。
+  // 示例 1：
+  // 输入：root = [1,3,null,null,2]
+  // 输出：[3,1,null,null,2]
+  // 解释：3 不能是 1 的左孩子，因为 3 > 1 。交换 1 和 3 使二叉搜索树有效。
+  // 示例 2：
+  // 输入：root = [3,1,4,null,null,2]
+  // 输出：[2,1,4,null,null,3]
+  // 解释：2 不能在 3 的右子树中，因为 2 < 3 。交换 2 和 3 使二叉搜索树有效。
+
+
+  // 方法：显示中序遍历
+  // 中序遍历的特点 [左子节点] [根节点] [右子节点]
+  // 比如 [2, 1, 3]的bst，中序遍历得到的是 [1, 2, 3]是个递增的有序的序列。如果我们错误地交换了两个节点，等价于在这个值序列中交换了两个值，破坏了值序列的平衡性
+  // 我们来看下如果在一个递增的序列中交换两个值会造成什么影响。假设有一个递增序列 a=[1,2,3,4,5,6,7]a=[1,2,3,4,5,6,7]。
+  // 如果我们交换两个不相邻的数字，例如 2 和 6，原序列变成了 a=[1,6,3,4,5,2,7]，那么显然序列中有两个位置不满足 ai < ai+1，
+  // 在这个序列中体现为 6>3，5>2，因此只要我们找到这两个位置，即可找到被错误交换的两个节点。
+  // 如果我们交换两个相邻的数字，例如2和3，此时交换后的序列只有一个位置不满足 ai<ai+1。因此整个值序列中不满足条件的位置或者有两个，或者有一个。
+  // 至此，解题方法已经呼之欲出了：
+  // 1.找到二叉搜索树中序遍历得到值序列的不满足条件的位置。
+  // 2.如果有两个，我们记为 i 和 j（ i < j 且 ai > ai+1 && aj > aj+1 )，那么对应被错误交换的节点即为ai对应的节点和aj+1对应的节点，我们分别记为x和y.
+  // 3. 如果有一个，我们记为i，那么对应被错误交换的节点即为 ai 对应的节点和ai+1对应的节点，我们分别记为x和y。
+  // 4.交换 x 和 y 两个节点即可。
+  // 实现部分，本方法开辟一个新数组 nums 来记录中序遍历得到的值序列，然后线性遍历找到两个位置 i 和 j，并重新遍历原二叉搜索树修改对应节点的值完成修复，具体实现可以看下面的代码。
+
+  // 复杂度分析
+  // 时间复杂度：O(N)，其中 N 为二叉搜索树的节点数。中序遍历需要 O(N) 的时间，判断两个交换节点在最好的情况下是 O(1)，在最坏的情况下是 O(N)，因此总时间复杂度为 O(N)。
+  // 空间复杂度：O(N)。我们需要用 nums 数组存储树的中序遍历列表。
+
+  /**
+   * Definition for a binary tree node.
+   * function TreeNode(val, left, right) {
+   *     this.val = (val===undefined ? 0 : val)
+   *     this.left = (left===undefined ? null : left)
+   *     this.right = (right===undefined ? null : right)
+   * }
+   */
+  /**
+   * @param {TreeNode} root
+   * @return {void} Do not return anything, modify root in-place instead.
+   */
+  // 中序遍历函数 左根右
+  const inorder = (root, nums) => {
+    if (root === null) return;
+    inorder(root.left, nums);
+    nums.push(root.val);
+    inorder(root.right, nums);
+  };
+
+  // 发现两个交换的元素下标的函数
+  const findTwoSwapped = (nums) => {
+    const n = nums.length;
+    // 定义要找到两个数，初始化坐标为-1
+    // 定义index1与index2，index1存储大的数，index2存储小的数
+    let index1 = -1, index2 = -1;
+    for(let i = 0; i < n - 1; i++) { // 这里没必要到n，因为最后一个元素后面就没有可以比较的了
+      if (nums[i] > nums[i + 1]) {
+        // [1,2,3,4,5,6,7]
+        // 1.[1,2,3,4,5,6,7] => [1,6,3,4,5,2,7]，当这种情况会出现两次ai > ai+1（6>3），aj > aj+1（5 > 2），所以我们需要将index1为6，index2为2
+        // 2.[1,3,2,4,5,6,7].当出现这种情况的时候只会出现一次 ai > ai+1（3>2），所以我们需要将index1 = 3，index2 = 2
+        // 因此当会出现两次这种情况的时候，我们第一次先赋值index2 = 3，然后因为index1为-1，所以我们让index1 = 6，然后又会遇到5 > 2，所以，index2 = 2，由于index1不会-1，所以index1为6，index2为2
+        // 第二种，因为3 > 2所以让index2 = 2，然后index1 = 3,
+        index2 = i + 1;
+        if (index1 === -1) {
+          index1 = i;
+        } else {
+          // 退出循环
+          break;
+        }
+      }
+    }
+    // x是大的，y是小的
+    const x = nums[index1], y = nums[index2];
+    return [x, y];
+  };
+
+  // 交换元素
+  const recover = (root, count, x, y) => {
+    // 当root不为null的时候
+    if (root !== null) {
+      // 如果发现root.val等于x或者等于y，x
+      if (root.val === x || root.val === y) {
+        // root.val 等于 y 则让root.val 等于 x
+        // root.val 等于 x 则让root.val 等于 y
+        root.val = root.val === x ? y : x;
+        // 更改两次就结束
+        if (--count == 0) {
+          return;
+        }
+      }
+      // 递归左子树和右子树
+      recover(root.left, 2, x, y);
+      recover(root.right, 2, x, y);
+    }
+  }
+
+  const recoverTree = function(root) {
+    // 定义nums数组用来存储中序遍历的节点val
+    const nums = [];
+    // 中序遍历，将nums填充
+    inorder(root, nums);
+    console.log(nums)
+    // 找到两个数first为大数，second为小数
+    const [first, second] = findTwoSwapped(nums);
+    recover(root, 2, first, second);
+  };
+</script>
+
+</html>
+
