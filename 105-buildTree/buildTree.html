@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 声明提升
+  // 1.var声明变量，变量只提升声明，不提升赋值
+  // console.log(a); // undefined
+  // var a = 1;
+  // 2.函数表达式不提升赋值
+  // console.log(z); // undefined
+  // z() // VM323:2 Uncaught TypeError: z is not a function
+  // var z = function(){console.log(1111)}
+  // 3.函数声明提升
+  // console.log(e); // ƒ e(){console.log('eee')}
+  // e(); // eee
+  // function e(){
+  //   console.log('eee')
+  // }
+
+  // 105. 从前序与中序遍历序列构造二叉树
+  // 中序遍历demo
+  function TreeNode(val, left, right) {
+    this.val = (val === undefined ? 0 : val)
+    this.left = (left === undefined ? null : left)
+    this.right = (right === undefined ? null : right)
+  }
+  var a = new TreeNode(1);
+  var b = new TreeNode(2);
+  var c = new TreeNode(3);
+  var d = new TreeNode(4);
+  b.left = c;
+  a.left = b;
+  a.right = d;
+  function inorderTraversal(root) {
+    var res = [];
+    var inorder = function (node) {
+      if (node == null) return;
+      // 左中右
+      inorder(node.left);
+      res.push(node.val);
+      inorder(node.right);
+    }
+    inorder(root);
+    return res;
+  }
+  console.log(inorderTraversal(a)) // [3,2,1,4]
+
+  // 给定两个整数数组 preorder 和 inorder ，其中 preorder 是二叉树的先序遍历， inorder 是同一棵树的中序遍历，请构造二叉树并返回其根节点。
+  // 示例 1:
+  // 输入: preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]
+  // 输出: [3,9,20,null,null,15,7]
+  // 示例 2:
+  // 输入: preorder = [-1], inorder = [-1]
+  // 输出: [-1]
+
+  // 前言
+  // 二叉树前序遍历的顺序为：
+  // 先遍历根节点；
+  // 随后递归地遍历左子树；
+  // 最后递归地遍历右子树。
+
+  // 二叉树中序遍历的顺序为：
+  // 先递归地遍历左子树；
+  // 随后遍历根节点；
+  // 最后递归地遍历右子树。
+
+  // 方法一：递归
+  // 时间复杂度：O(n)，这里n为二叉树节点的个数。
+  // 空间复杂度：O(n)，记录遍历到的元素在中序遍历的下标。
+  // 思路
+  // 对于任意一颗树而言，前序遍历的形式总是
+  // [ 根节点, [左子树的前序遍历结果], [右子树的前序遍历结果] ]
+  // 即根节点总是前序遍历中的第一个节点。而中序遍历的形式总是
+  // [ [左子树的中序遍历结果], 根节点, [右子树的中序遍历结果] ]
+  // 只要我们在中序遍历中定位到根节点，那么我们就可以分别知道左子树和右子树中的节点数目。
+  // 由于同一颗子树的前序遍历和中序遍历的长度显然是相同的，因此我们就可以对应到前序遍历的结果中，对上述形式中的所有左右括号进行定位。
+  
+  // 这样以来，我们就知道了左子树的前序遍历和中序遍历结果，以及右子树的前序遍历和中序遍历结果，我们就可以递归地对构造出左子树和右子树，再将这两颗子树接到根节点的左右位置。
+
+  // 细节(优化点)
+  // 在中序遍历中对根节点进行定位时，一种简单的方法是直接扫描整个中序遍历的结果并找出根节点，但这样做的时间复杂度较高。我们可以考虑使用哈希表来帮助我们快速地定位根节点。
+  //对于哈希映射中的每个键值对，键表示一个元素（节点的值），值表示其在中序遍历中的出现位置。在构造二叉树的过程之前，我们可以对中序遍历的列表进行一遍扫描，就可以构造出这个哈希映射。
+  // 在此后构造二叉树的过程中，我们就只需要 O(1)O(1) 的时间对根节点进行定位了。
+
+
+  // 我们图解一下：
+  //    3
+  //   / \
+  //  9  20
+  //    / \
+  //   15  7
+  // 这个二叉树的前序遍历以及中序遍历分别为：[3, 9, 20, 15, 7]、[9, 3, 15, 20, 7]
+  // 拆分这俩数组，按照上面的思路
+  // [3](根) [9](左子树) [20, 15, 7]右子树
+  // [9](左子树) [3](根) [15, 20, 7]右子树
+  // 我们将中序遍历的数组以item为key，index为val存到数组中。以空间换时间。
+  // 我们定义: preStart，preEnd，inStart，inEnd四个指针
+  //   [3, 9, 20, 15, 7]
+  //   /              \ 
+  // preStart         preEnd
+  //  [9, 3, 15, 20, 7]
+  //  /              \
+  // inStart         inEnd
+  // 然后前序遍历的第一个元素一定是根元素，我们拿到根元素可以在map中找到根元素在中序遍历中的下标pIndex
+  // 这样中序遍历的数组可以划分为
+  // [ 左 子 树 ]                      根                    [右 子 树 ]
+  // /        \                        |                      /      \
+  //inStart  pIndex-1                 pIndex              pIndex+1   inEnd
+  // 前序遍历数组可以划分为：
+  // [根]                       [ 左 子 树 ]               [ 右 子 树 ] -> preEnd(右边界)
+  // /                            /       \                右子树左边界(pIndex-inStart+preStart+1)           
+  //preStart                preStart+1   x:(x-(preStart+1) = pIndex - 1 - inStart) => x = pIndex - inStart + preStart
+  // 由于左子树的节点个数相同：(x-(preStart+1) = pIndex - 1 - inStart) => x = pIndex - inStart + preStart
+  // 这样我们就可以通过分界线得到前序遍历的左子树以及中序遍历的左子树构造root节点的左子树，同理构建右子树。
+
+  /**
+   * Definition for a binary tree node.
+   * function TreeNode(val, left, right) {
+   *     this.val = (val===undefined ? 0 : val)
+   *     this.left = (left===undefined ? null : left)
+   *     this.right = (right===undefined ? null : right)
+   * }
+   */
+  /**
+   * @param {number[]} preorder
+   * @param {number[]} inorder
+   * @return {TreeNode}
+   */
+  var buildTree = function(preorder, inorder) {
+    var preLen = preorder.length, inLen = inorder.length;
+    // 排除不符合的条件
+    if (preLen !== inLen) return null;
+    // 用空间换时间，将inorder的item为key，index为val，存到hashmap中
+    var indexMap = new Map();
+    for(var i = 0; i < inLen; i++) {
+      // set get has
+      indexMap.set(inorder[i], i);
+    }
+    var buildTreeTraversal = function(preStart, preEnd, inStart, inEnd) {
+      // 递归出口，当前指针大于后指针的时候结束
+      if (preStart > preEnd || inStart > inEnd) return null;
+      // 前序遍历数组的第一个元素为根节点
+      var rootVal = preorder[preStart];
+      // 前序遍历中的第一个节点就是根节点，创建root节点
+      var root = new TreeNode(rootVal);
+      // 在indexMap中找到root在中序遍历数组中的下标
+      var pIndex = indexMap.get(rootVal);
+      // 根据计算出来的左右子树的边界继续递归生成左右子树
+      root.left = buildTreeTraversal(preStart + 1, pIndex - inStart + preStart, inStart, pIndex - 1);
+      root.right = buildTreeTraversal(pIndex - inStart + preStart + 1, preEnd, pIndex + 1, inEnd);
+      // 返回root
+      return root;
+    };
+    return buildTreeTraversal(0, preLen - 1, 0, inLen - 1);
+  };
+</script>
+
+</html>
