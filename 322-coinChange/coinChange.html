@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 322. 零钱兑换
+  // 给你一个整数数组 coins ，表示不同面额的硬币；以及一个整数 amount ，表示总金额。 
+  // 计算并返回可以凑成总金额所需的 最少的硬币个数 。如果没有任何一种硬币组合能组成总金额，返回 -1 。
+  // 你可以认为每种硬币的数量是无限的
+
+  // 示例 1：
+  // 输入：coins = [1, 2, 5], amount = 11
+  // 输出：3 
+  // 解释：11 = 5 + 5 + 1
+
+  // 示例 2：
+  // 输入：coins = [2], amount = 3
+  // 输出：-1
+  // 示例 3：
+
+  // 输入：coins = [1], amount = 0
+  // 输出：0
+  //  
+  // 提示：
+  // 1 <= coins.length <= 12
+  // 1 <= coins[i] <= 231 - 1
+  // 0 <= amount <= 104
+
+
+  // 1、暴⼒递归  时间复杂度指数级别，所以leetcode过不去
+  // ⾸先，这个问题是动态规划问题，因为它具有「最优⼦结构」的。要符合 「最优⼦结构」，⼦问题间必须互相独⽴。啥叫相互独⽴？你肯定不想看数 学证明，我⽤⼀个直观的例⼦来讲解。
+  // ⽐如说，你的原问题是考出最⾼的总成绩，那么你的⼦问题就是要把语⽂考 到最⾼，数学考到最⾼…… 为了每门课考到最⾼，你要把每门课相应的选 择题分数拿到最⾼，填空题分数拿到最⾼…… 
+  // 当然，最终就是你每门课都 是满分，这就是最⾼的总成绩。
+  // 得到了正确的结果：最⾼的总成绩就是总分。因为这个过程符合最优⼦结 构，「“每门科⽬考到最⾼”这些⼦问题是互相独⽴，互不⼲扰的」。
+  // 但是，如果加⼀个条件：你的语⽂成绩和数学成绩会互相制约，此消彼⻓。 这样的话，显然你能考到的最⾼总成绩就达不到总分了，按刚才那个思路就 会得到错误的结果。
+  // 【因为⼦问题并不独⽴，语⽂数学成绩⽆法同时最优，所 以最优⼦结构被破坏。】
+
+  // 那么，既然知道了这是个动态规划问题，就要思考如何列出正确的状态转移⽅程？
+  // 1.先确定状态，也就是原问题和子问题中变化的数量，由于硬币数量无限，所以唯一的状态就是目标金额mount。
+  // 2.然后确定 dp 函数的定义：当前的⽬标⾦额是 n ，⾄少需要 dp(n) 个硬币凑出该⾦额。
+  // 3.然后确定「选择」并择优，也就是对于每个状态，可以做出什么选择改变当前状态。具体到这个问题，⽆论当的⽬标⾦额是多少，选择就是从⾯额列表 coins 中选择⼀个硬币，然后⽬标⾦额就会减少：
+  // 伪码框架
+  var coinChange = function(coins, amount) { // coins是硬币类型数组，amount为最后的金额
+    // 定义：要凑出金额n，至少需要dp(n)个硬币
+    var dp = function(n) {
+      // 做选择，选择需要硬币最少的那个结果
+      for(var coin of coins) {
+        res = Math.min(res, 1 + dp(n - coin));
+      }
+      return res;
+    }
+    // 我们要求的问题是 dp(amount)
+    return dp(amount);
+  }
+  // 最后明确 base case，显然⽬标⾦额为 0 时，所需硬币数量为 0；当⽬标⾦额 ⼩于 0 时，⽆解，返回 -1：
+  var coinChange = function(coins, amount) { // coins是硬币类型数组，amount为最后的金额
+    // 定义：要凑出金额n，至少需要dp(n)个硬币
+    var dp = function(n) {
+      // base case
+      if (n === 0) return 0;
+      if (n < 0) return -1;
+      // 求最小值，所以初始化结果为正无穷
+      var res = Infinity;
+      // 做选择，选择需要硬币最少的那个结果
+      for(var coin of coins) {
+        // 子问题
+        var subProblem = dp(n - coin);
+        // 子问题无解跳过
+        if (subProblem === -1) continue; // continue下面的代码不执行，然后紧接着新一轮循环
+        // 这里为啥是 1 + dp(n - coin)，因为选择一种硬币面值，数量就是1，所以递归就是 1 + dp(n - coin)
+        res = Math.min(res, 1 + subProblem);
+      }
+      return res !== Infinity ? res : -1;
+    }
+    // 我们要求的问题是 dp(amount)
+    return dp(amount);
+  }
+  // ⾄此，状态转移⽅程其实已经完成了，以上算法已经是暴⼒解法了，以上代 码的数学形式就是状态转移⽅程：
+  //         { 0, n = 0
+  // dp(n) = {-1, n < 0
+  //         {min{dp(n-coin) + 1 | coin∈coins}, n > 0
+  // ⾄此，这个问题其实就解决了，只不过需要消除⼀下重叠⼦问题，⽐如 amount = 11, coins = {1,2,5} 时画出递归树看看：
+  // 【时间复杂度分析：⼦问题总数 x 每个⼦问题的时间。】
+  // ⼦问题总数为递归树节点个数，这个⽐较难看出来，是 O(n^k)，总之是指 数级别的。每个⼦问题中含有⼀个 for 循环，复杂度为 O(k)。所以总时间复杂度为 O(k * n^k)，指数级别。
+
+  // 2.带备忘录的递归
+  // 只需要稍加修改，就可以通过备忘录消除⼦问题：
+  var coinChange = function(coins, amount) {
+    // 备忘录
+    var memo = new Map();
+    // 定义：要凑出金额n，至少需要dp(n)个硬币
+    var dp = function(n) {
+      // 查询备忘录，避免重复计算
+      if (memo.has(n)) return memo.get(n);
+      // base case
+      if (n === 0) return 0;
+      if (n < 0) return -1;
+      var res = Infinity;
+      for(var coin of coins) {
+        // 子问题
+        var subProblem = dp(n - coin);
+        // 无效子问题，跳过
+        if (subProblem === -1) continue;
+        res = Math.min(res, 1 + subProblem);
+      }
+      // 存入备忘录
+      memo.set(n, res !== Infinity ? res : -1);
+      return memo.get(n);
+    }
+    return dp(amount);
+  }
+  // 很显然「备忘录」⼤⼤减⼩了⼦问题数⽬，完全消除了⼦问题的冗余，所以⼦问题总数不会超过⾦额数n，即⼦问题数⽬为 O(n)。处理⼀个⼦问题的时间不变，仍是 O(k)，所以总的时间复杂度是 O(kn)。
+
+  // 3.dp数组的迭代解法
+  // 当然，我们也可以⾃底向上使⽤ dp table 来消除重叠⼦问题， dp 数组的定义和刚才 dp 函数类似，定义也是⼀样的：
+  // dp[i] = x 表⽰，当⽬标⾦额为 i 时，⾄少需要 x 枚硬币。
+  var coinChange = function(coins, amount) {
+    // 大小为amount + 1，初始值也为amount + 1
+    // 为啥 dp 数组初始化为 amount + 1 呢，因为凑成 amount ⾦额的硬 币数最多只可能等于 amount （全⽤ 1 元⾯值的硬币），所以初始化为 amount + 1 就相当于初始化为正⽆穷，便于后续取最⼩值。
+    var dp = new Array(amount + 1).fill(amount + 1);
+    // base case
+    dp[0] = 0;
+    for(var i = 0; i < dp.length; i++) {
+      // 内层 for 在求所有⼦问题 + 1 的最⼩值
+      for(var coin of coins) {
+        // 子问题无解，跳过
+        if ((i - coin) < 0) continue;
+        dp[i] = Math.min(dp[i], 1 + dp[i - coin]);
+      }
+    }
+    return (dp[amount] === amount + 1) ? -1 : dp[amount]
+  }
+
+  // 备忘录、DP table 就是在追求“如何聪明地穷举”。⽤空间换时间的思路，是 降低时间复杂度的不⼆法门
+
+  // 子问题：为何为dp(n-coin) + 1，比如11，coins:[1,2,5]，那么如果coin为1，则是dp(11-1)+1，dp return的结果为币的个数，也就是dp(10)+ 1 如果coins为5，那么dp(6) + 1，因为一个币代表了5块钱。
+</script>
+
+</html>
