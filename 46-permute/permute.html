@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 废话不多说，直接上回溯算法框架。解决⼀个回溯问题，实际上就是⼀个决 策树的遍历过程。你只需要思考 3 个问题： 
+  // 1、路径：也就是已经做出的选择。 
+  // 2、选择列表：也就是你当前可以做的选择。 
+  // 3、结束条件：也就是到达决策树底层，⽆法再做选择的条件。
+  // 如果你不理解这三个词语的解释，没关系，我们后⾯会⽤「全排列」和「N 皇后问题」这两个经典的回溯算法问题来帮你理解这些词语是什么意思，现 在你先留着印象。
+  // 代码⽅⾯，回溯算法的框架：
+  // result = [] 
+  // def backtrack(路径, 选择列表): 
+  //   if 满⾜结束条件: 
+  //     result.add(路径) 
+  //     return 
+  //   for 选择 in 选择列表: 
+  //     做选择 
+  //     backtrack(路径, 选择列表) 
+  //     撤销选择
+  // 其核⼼就是 for 循环⾥⾯的递归，在递归调⽤之前「做选择」，在递归调⽤ 之后「撤销选择」，特别简单。
+
+  // 什么叫做选择和撤销选择呢，这个框架的底层原理是什么呢？下⾯我们就通 过「全排列」这个问题来解开之前的疑惑，详细探究⼀下其中的奥妙！
+  // ⼀、全排列问题
+  // 我们在⾼中的时候就做过排列组合的数学题，我们也知道 n 个不重复的 数，全排列共有 n! 个。 PS：为了简单清晰起⻅，我们这次讨论的全排列问题不包含重复的数字。
+  // 那么我们当时是怎么穷举全排列的呢？⽐⽅说给三个数 [1,2,3] ，你肯定 不会⽆规律地乱穷举，⼀般是这样： 
+  // 先固定第⼀位为 1，然后第⼆位可以是 2，那么第三位只能是 3；然后可以 把第⼆位变成 3，第三位就只能是 2 了；
+  // 然后就只能变化第⼀位，变成 2， 然后再穷举后两位…… 
+  // 其实这就是回溯算法，我们⾼中⽆师⾃通就会⽤，或者有的同学直接画出如 下这棵回溯树：
+  // 图片1
+  // 只要从根遍历这棵树，记录路径上的数字，其实就是所有的全排列。我们不 妨把这棵树称为回溯算法的「决策树」。
+  // 为啥说这是决策树呢，因为你在每个节点上其实都在做决策。⽐如说你站在 下图的红⾊节点上：
+  // 图片2
+  // 你现在就在做决策，可以选择 1 那条树枝，也可以选择 3 那条树枝。为啥只 能在 1 和 3 之中选择呢？因为 2 这个树枝在你⾝后，这个选择你之前做过 了，⽽全排列是不允许重复使⽤数字的。
+  // 现在可以解答开头的⼏个名词： [2] 就是「路径」，记录你已经做过的选择； [1,3] 就是「选择列表」，表⽰你当前可以做出的选择；「结束条件」就是遍历到树的底层，在这⾥就是选择列表为空的时候。 
+  // 如果明⽩了这⼏个名词，可以把「路径」和「选择」列表作为决策树上每个 节点的属性，⽐如下图列出了⼏个节点的属性：
+  // 图片3
+  // 我们定义的 backtrack 函数其实就像⼀个指针，在这棵树上游⾛，同时要 正确维护每个节点的属性，每当⾛到树的底层，其「路径」就是⼀个全排 列
+  // 再进⼀步，如何遍历⼀棵树？这个应该不难吧。回忆⼀下之前「学习数据结 构的框架思维」写过，各种搜索问题其实都是树的遍历问题，⽽多叉树的遍 历框架就是这样：
+  // void traverse(TreeNode root) { 
+  //   for (TreeNode child : root.childern) 
+  //     // 前序遍历需要的操作 
+  //     traverse(child); 
+  //     // 后序遍历需要的操作 
+  // }
+  // 前序遍历的代码在进⼊某⼀个节点之前的那个时间点执⾏，后序遍历代码在 离开某个节点之后的那个时间点执⾏。
+
+  // 回想我们刚才说的，「路径」和「选择」是每个节点的属性，函数在树上游 ⾛要正确维护节点的属性，那么就要在这两个特殊时间点搞点动作：
+  // 图片四
+  // 现在，你是否理解了回溯算法的这段核⼼框架？
+  // for 选择 in 选择列表:
+  //  # 做选择 
+  //  将该选择从选择列表移除 
+  //  路径.add(选择) 
+  //  backtrack(路径, 选择列表) 
+  //  # 撤销选择 
+  //  路径.remove(选择) 
+  //  将该选择再加⼊选择列表
+  // 我们只要在递归之前做出选择，在递归之后撤销刚才的选择，就能正确得到 每个节点的选择列表和路径。
+
+  // 单向链表
+  // 定义节点类
+  class Node {
+    constructor(val) {
+      this.val = val;
+      this.next = null;
+    }
+  }
+
+  // 定义链表类
+  class LinkedList {
+    constructor() {
+      this.size = 0;
+      this.head = null;
+    }
+
+    // 末尾添加node
+    append(val) {
+      // 创建节点
+      var node = new Node(val);
+      // 如果链表为空，则直接将节点赋值给head
+      if (this.size === 0) {
+        this.head = node;
+        this.size++;
+      } else {
+        // 链表不为空，将添加到最后一个节点的后面
+        var currentNode = this.head;
+        // 遍历链表
+        while (currentNode.next !== null) {
+          currentNode = currentNode.next;
+        }
+        currentNode.next = node;
+        this.size++;
+      }
+    }
+    // 根据索引获取node
+    get(index) {
+      // 如果索引超出范围或者不是数字就会抛出错误
+      if ((index < 0) || (index >= this.size) || (typeof index !== 'number')) {
+        throw Error('out range or index is not number!');
+      }
+      // 索引为0，取head的val
+      if (index === 0) return this.head;
+      // 索引不为0，如果取索引为2的就需要调用2次next
+      var currentNode = this.head;
+      while (index) {
+        currentNode = currentNode.next;
+        index--;
+      }
+      return currentNode;
+    }
+    // 获取指定node
+    getNode(val) {
+      if (this.head === null) return null;
+      var currentNode = this.head;
+      // 如果选择的是head，那么就进不去这个循环
+      while (currentNode.next !== null && currentNode.val !== val) {
+        currentNode = currentNode.next;
+      }
+      if (currentNode.val !== val) return null;
+      return currentNode;
+    }
+    // 向目标节点的后面添加
+    // el要插入的节点的val，target为目标节点
+    insertAfter(val, target) {
+      var currentNode = this.head;
+      // 要插入的节点
+      var node = new Node(val);
+      // 目标节点
+      var targetNode = this.getNode(target);
+      // 目标节点的next
+      var targetNodeNext = targetNode.next;
+      // 要插入的节点的next 为目标节点的next
+      node.next = targetNodeNext;
+      // 遍历链表，不是目标节点继续next
+      while (currentNode !== null && currentNode !== targetNode) {
+        currentNode = currentNode.next;
+      }
+      // 在此处currentNode是目标节点
+      // 把新的节点覆盖目标节点的next上
+      currentNode.next = node;
+      this.size++;
+    }
+    // 清空链表
+    clear() {
+      this.head = null
+      this.size = 0
+    }
+    // 删除指定节点
+    remove(val) {
+      var currentNode = this.head;
+      var removeNode = this.getNode(val);
+      var removeNodeNext = removeNode.next;
+      // 如果删除的是第一个节点
+      if (currentNode.val === val) {
+        this.head = null;
+        this.size = 0;
+        return;
+      }
+      // 获取删除节点的前一个节点
+      while (currentNode !== null) {
+        // 如果当前节点的next时要删除的节点
+        if (currentNode.next === removeNode) {
+          // 将要删除节点的next
+          currentNode.next = removeNodeNext;
+          this.size--;
+          break;
+        }
+        currentNode = currentNode.next;
+      }
+    }
+  }
+
+  /**
+   * @param {number[]} nums
+   * @return {number[][]}
+   */
+  // 主函数，输入一组不重复的数字，返回他们的全排列
+  var permute = function (nums) {
+    // 结果
+    var res = [];
+    // 路径
+    var track = new LinkedList();
+    // 路径：记录在 track 中 
+    // 选择列表：nums 中不存在于 track 的那些元素 
+    // 结束条件：nums 中的元素全都在 track 中出现
+    var backtrack = function (nums, track) {
+      // 触发结束的条件
+      if (track.size === nums.length) {
+        // res.push(track);
+        var path = [];
+        var currentNode = track.head;
+        while (currentNode !== null) {
+          path.push(currentNode.val);
+          currentNode = currentNode.next;
+        }
+        res.push(path);
+        return;
+      }
+      for (var i = 0; i < nums.length; i++) {
+        // 排除不合法的选择
+        if (track.getNode(nums[i]) !== null) {
+          continue;
+        }
+        // 做选择
+        track.append(nums[i]);
+        // 进入下一层决策树
+        backtrack(nums, track);
+        // 取消选择
+        track.remove(nums[i]);
+      }
+    };
+    backtrack(nums, track);
+    return res;
+  };
+  console.log(permute([1, 2, 3]))
+  // ⾄此，我们就通过全排列问题详解了回溯算法的底层原理。当然，这个算法 解决全排列不是很⾼效，应为对链表使⽤ contains ⽅法需要 O(N) 的时间 复杂度。有更好的⽅法通过交换元素达到⽬的，但是难理解⼀些，这⾥就不 写了，有兴趣可以⾃⾏搜索⼀下。
+  // 但是必须说明的是，不管怎么优化，都符合回溯框架，⽽且时间复杂度都不 可能低于 O(N!)，因为穷举整棵决策树是⽆法避免的。这也是回溯算法的⼀ 个特点，不像动态规划存在重叠⼦问题可以优化，回溯算法就是纯暴⼒穷 举，复杂度⼀般都很⾼。
+  // function swap(nums, i, j) {
+  //   var temp = nums[i];
+  //   nums[i] = nums[j];
+  //   nums[j] = temp;
+  // }
+
+  // leetcode官方
+  /**
+   * @param {number[]} nums
+   * @return {number[][]}
+   */
+  var permute = function (nums) {
+    var res = [];
+    var output = nums.map(item => item);
+    var n = nums.length;
+    var swap = function(nums, i, j) {
+      var temp = nums[i];
+      nums[i] = nums[j];
+      nums[j] = temp;
+    };
+    var backtrack = function (n, output, res, first) {
+      // 触发结束的条件
+      if (n === first) {
+        res.push(JSON.parse(JSON.stringify(output)));
+        return;
+      }
+      for (var i = first; i < n; i++) {
+        // 做选择
+        swap(output, first, i);
+        // 进入下一个决策树
+        backtrack(n, output, res, first + 1);
+        // 撤销选择 做选择[1,2,3,4,5]=>[5,2,3,4,1]，撤销[5,2,3,4,1] => [1,2,3,4,5]
+        swap(output, first, i);
+      }
+    };
+    // 比如[1,2,3]，first为0，i从first开始遍历，先固定first为0，i为0，交换位置后，进入下一层决策层，first为1，i为1，(1和1交换位置)后，进入下一层决策层，first为2，i为2，交换位置
+    // 进入first为3，然后出发结束条件，输出[1,2,3]，然后回撤22交换，然后退到first为1，i为2，然后12交换为[1,3,2]，然后进入下一层决策层first为2，i为2，交换位置22，然后first为3，输出
+    // [1,3,2]，退回first为1，遍历结束，交换11，退回first为0，然后遍历，i为1，01交换ouput=>[2,1,3]，接着像上面的流程一样...
+    backtrack(n, output, res, 0);
+    return res;
+  }
+  console.log(permute([1, 2, 3]))
+</script>
+
+</html>
