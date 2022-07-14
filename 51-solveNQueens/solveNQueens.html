@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 51. N 皇后
+  // 按照国际象棋的规则，皇后可以攻击与之处在同一行或同一列或同一斜线上的棋子。
+  // n 皇后问题 研究的是如何将 n 个皇后放置在 n×n 的棋盘上，并且使皇后彼此之间不能相互攻击。
+  // 给你一个整数 n ，返回所有不同的 n 皇后问题 的解决方案。
+  // 每一种解法包含一个不同的 n 皇后问题 的棋子放置方案，该方案中 'Q' 和 '.' 分别代表了皇后和空位。
+
+  // 示例 1：
+  // 输入：n = 4
+  // 输出：[[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]
+  // 解释：如上图所示，4 皇后问题存在两个不同的解法。
+
+  // 示例 2：
+  // 输入：n = 1
+  // 输出：[["Q"]]
+
+  // js生成二维数组
+  // 方法一： new Array(x).fill(new Array(y).fill(0))
+  // 但注意，当一个对象别传递给fill方法时，填充数组的是这个对象的引用。即二维数组的第一个维度中的每一个数组都指向同一个引用，如果向第一个维度中的任一元素执行push，则每一个二维中都会多一个元素。
+  // 方法二：new Array(x).fill().map(() => new Array(y).fill(0))
+  // 方法三：Array.from(new Array(x), () => new Array(y).fill(0))
+
+  /**
+   * @param {number} n
+   * @return {string[][]}
+   */
+  var solveNQueens = function (n) {
+    var res = [];
+    // '.' 表⽰空，'Q' 表⽰皇后，初始化空棋盘。
+    var board = new Array(n).fill().map(() => new Array(n).fill("."));
+    // board是棋盘，row是行，一行只能放一个
+    // 路径：board 中⼩于 row 的那些⾏都已经成功放置了皇后 
+    // 选择列表：第 row ⾏的所有列都是放置皇后的选择 
+    // 结束条件：row 超过 board 的最后⼀⾏
+    var backtrack = function(board, row) {
+      // 触发结束条件
+      if (board.length === row) {
+        // 说明row已经超出棋盘，我们退出
+        res.push(board.map(item => item.join("")));
+        return;
+      }
+      var n = board.length;
+      // 这个是控制col列
+      for(var col = 0; col < n; col++) {
+        // 排除不合理情况，就跳过这次循环
+        if (!isValid(board, row, col)) {
+          continue;
+        }
+        // 满足条件的row,col，改变row行，col列为q
+        board[row][col] = 'Q';
+        // 进入子决策树
+        backtrack(board, row + 1);
+        // 撤回选择
+        board[row][col] = '.';
+      }
+    }
+    // 皇后不能摆在同一行，所以我们每次都是让row+1，
+    // 皇后不能摆在同一列
+    // 皇后会能摆在斜对角，因为下面的行还没摆，所以不需要校验
+    var isValid = function(board, row, col) {
+      var n = board.length;
+      // 判断列，同一列不能有相同的
+      for(var i = 0; i < row; i++) { // i<n是检查n行的row列
+        if (board[i][col] === 'Q') {
+          return false;
+        }
+      }
+      // 判断左上方
+      for(var i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--) {
+        if (board[i][j] === 'Q') {
+          return false;
+        }
+      }
+      // 判断右上方
+      for(var i = row - 1, j = col + 1; i >=0 && j < n; i--, j++) {
+        if (board[i][j] === 'Q') {
+          return false;
+        }
+      }
+      return true;
+    } 
+    // 从第0行开始
+    backtrack(board, 0);
+    return res;
+  };
+  // 函数 backtrack 依然像个在决策树上游⾛的指针，通过 row 和 col 就可 以表⽰函数遍历到的位置，通过 isValid 函数可以将不符合条件的情况剪枝：
+  
+</script>
+
+</html>
