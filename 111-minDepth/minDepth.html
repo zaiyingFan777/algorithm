@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 其实 DFS 算法就是回溯算法
+  // BFS 相对 DFS 的最主要的区别是：BFS 找到的路径⼀定是最短的，但代价 就是空间复杂度⽐ DFS ⼤很多
+  // ⼀、算法框架
+  // 要说框架的话，我们先举例⼀下 BFS 出现的常⻅场景好吧，问题的本质就 是让你在⼀幅「图」中找到从起点 start 到终点 target 的最近距离，这 个例⼦听起来很枯燥，但是 BFS 算法问题其实都是在⼲这个事⼉，
+  // 计算从起点 start 到终点 target 的最近距离 
+  // int BFS(Node start, Node target) { 
+  //   Queue<Node> q; // 核⼼数据结构 
+  //   Set<Node> visited; // 避免⾛回头路 
+  //   q.offer(start); // 将起点加⼊队列 
+  //   visited.add(start); 
+  //   int step = 0; // 记录扩散的步数 
+  //   while (q not empty) { 
+  //     int sz = q.size(); 
+  //     /* 将当前队列中的所有节点向四周扩散 */ 
+  //     for (int i = 0; i < sz; i++) { 
+  //       Node cur = q.poll(); 
+  //       /* 划重点：这⾥判断是否到达终点 */
+  //       if (cur is target) return step; 
+  //       /* 将 cur 的相邻节点加⼊队列 */ 
+  //       for (Node x : cur.adj()) 
+  //         if (x not in visited) { 
+  //           q.offer(x); 
+  //           visited.add(x); 
+  //         } 
+  //     }
+  //     /* 划重点：更新步数在这⾥ */ 
+  //     step++; 
+  //   }
+  // }
+  // 队列 q 就不说了，BFS 的核⼼数据结构； cur.adj() 泛指 cur 相邻的节点，⽐如说⼆维数组中， cur 上下左右四⾯的位置就是相邻节点； 
+  // visited 的主要作⽤是防⽌⾛回头路，⼤部分时候都是必须的，但是像⼀般的⼆叉树结构，没有⼦节点到⽗节点的指针，不会⾛回头路就不需要 visited 。
+
+
+  // 111 二叉树的最小深度
+  // 给定一个二叉树，找出其最小深度。
+  // 最小深度是从根节点到最近叶子节点的最短路径上的节点数量。
+  // 说明：叶子节点是指没有子节点的节点。
+
+  // 示例 1：
+  // 输入：root = [3,9,20,null,null,15,7]
+  // 输出：2
+
+  // 示例 2：
+  // 输入：root = [2,null,3,null,4,null,5,null,6]
+  // 输出：5
+
+  /**
+   * Definition for a binary tree node.
+   * function TreeNode(val, left, right) {
+   *     this.val = (val===undefined ? 0 : val)
+   *     this.left = (left===undefined ? null : left)
+   *     this.right = (right===undefined ? null : right)
+   * }
+   */
+  /**
+   * @param {TreeNode} root
+   * @return {number}
+   */
+  var minDepth = function (root) {
+    if (!root) return 0;
+    // 声明一个队列
+    var queue = [root];
+    // 声明depth变量
+    // root 本⾝就是⼀层，depth 初始化为 1
+    var depth = 1;
+    while(queue.length) {
+      var sz = queue.length;
+      // 遍历queue，取出每个元素
+      /* 将当前队列中的所有节点向四周扩散 */
+      for(var i = 0; i < sz; i++) {
+        // 从队列中取出第一个
+        var node = queue.shift();
+        // 遇到叶子节点退出
+        if (!node.left && !node.right) return depth;
+        if (node.left) queue.push(node.left);
+        if (node.right) queue.push(node.right);
+      }
+      // 遍历完一层让depth++
+      depth++;
+    }
+    return depth;
+  };
+</script>
+
+</html>
