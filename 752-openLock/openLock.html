@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 上接111-minDepth
+  // ⼆叉树是很简单的数据结构，我想上述代码你应该可以理解的吧，其实其他 复杂问题都是这个框架的变形，再探讨复杂问题之前，我们解答两个问题： 
+  // 1、为什么 BFS 可以找到最短距离，DFS 不⾏吗？ ⾸先，你看 BFS 的逻辑， depth 每增加⼀次，队列中的所有节点都向前迈 ⼀步，这保证了第⼀次到达终点的时候，⾛的步数是最少的。 
+  // DFS 不能找最短路径吗？其实也是可以的，但是时间复杂度相对⾼很多。 你想啊，DFS 实际上是靠递归的堆栈记录⾛过的路径，你要找到最短路径，肯定得把⼆叉树中所有树杈都探索完才能对⽐出最短的路径有多⻓对不对？
+  // ⽽ BFS 借助队列做到⼀次⼀步「⻬头并进」，是可以在不遍历完整棵 树的条件下找到最短距离的。 
+  // BFS 算法解题套路框架 形象点说，DFS 是线，BFS 是⾯；DFS 是单打独⽃，BFS 是集体⾏动。这个应该⽐较容易理解吧。
+  // 2、既然 BFS 那么好，为啥 DFS 还要存在？
+  // BFS 可以找到最短距离，但是空间复杂度⾼，⽽ DFS 的空间复杂度较低。 
+  // 还是拿刚才我们处理⼆叉树问题的例⼦，假设给你的这个⼆叉树是满⼆叉树，节点数为 N ，对于 DFS 算法来说，空间复杂度⽆⾮就是递归堆栈，最坏情况下顶多就是树的⾼度，也就是 O(logN) 。 
+  // 但是你想想 BFS 算法，队列中每次都会储存着⼆叉树⼀层的节点，这样的 话最坏情况下空间复杂度应该是树的最底层节点的数量，也就是 N/2 ，⽤ Big O 表⽰的话也就是 O(N) 。
+  // 由此观之，BFS 还是有代价的，⼀般来说在找最短路径的时候使⽤ BFS， 其他时候还是 DFS 使⽤得多⼀些（主要是递归代码好写）。 好了，现在你对 BFS 了解得⾜够多了，下⾯来⼀道难⼀点的题⽬，深化⼀ 下框架的理解吧。
+
+
+  // 752. 打开转盘锁
+  // 你有一个带有四个圆形拨轮的转盘锁。每个拨轮都有10个数字： '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' 。每个拨轮可以自由旋转：例如把 '9' 变为 '0'，'0' 变为 '9' 。每次旋转都只能旋转一个拨轮的一位数字。
+  // 锁的初始数字为 '0000' ，一个代表四个拨轮的数字的字符串。
+  // 列表 deadends 包含了一组死亡数字，一旦拨轮的数字和列表里的任何一个元素相同，这个锁将会被永久锁定，无法再被旋转。
+  // 字符串 target 代表可以解锁的数字，你需要给出解锁需要的最小旋转次数，如果无论如何不能解锁，返回 -1 。
+
+  // 示例 1:
+  // 输入：deadends = ["0201","0101","0102","1212","2002"], target = "0202"
+  // 输出：6
+  // 解释：
+  // 可能的移动序列为 "0000" -> "1000" -> "1100" -> "1200" -> "1201" -> "1202" -> "0202"。
+  // 注意 "0000" -> "0001" -> "0002" -> "0102" -> "0202" 这样的序列是不能解锁的，
+  // 因为当拨动到 "0102" 时这个锁就会被锁定。
+
+  // 示例 2:
+  // 输入: deadends = ["8888"], target = "0009"
+  // 输出：1
+  // 解释：把最后一位反向旋转一次即可 "0000" -> "0009"。
+
+  // 示例 3:
+  // 输入: deadends = ["8887","8889","8878","8898","8788","8988","7888","9888"], target = "8888"
+  // 输出：-1
+  // 解释：无法旋转到目标数字且不被锁定。
+
+  // 题⽬中描述的就是我们⽣活中常⻅的那种密码锁，若果没有任何约束，最少的拨动次数很好算，就像我们平时开密码锁那样直奔密码拨就⾏了。 但现在的难点就在于，不能出现 deadends ，应该如何计算出最少的转动次数呢？
+  // 第⼀步，我们不管所有的限制条件，不管 deadends 和 target 的限制，就思考⼀个问题：如果让你设计⼀个算法，穷举所有可能的密码组合，你怎么做？
+  // 穷举呗，再简单⼀点，如果你只转⼀下锁，有⼏种可能？总共有 4 个位置， 每个位置可以向上转，也可以向下转，也就是有 8 种可能对吧。
+  // ⽐如说从 "0000" 开始，转⼀次，可以穷举出 "1000", "9000", "0100", "0900"... 共 8 种密码。然后，再以这 8 种密码作为基础，对每个密码再转 ⼀下，穷举出所有可能...
+  // 仔细想想，这就可以抽象成⼀幅图，每个节点有 8 个相邻的节点，⼜让你求 最短距离，这不就是典型的 BFS 嘛，框架就可以派上⽤场了，先写出⼀个 「简陋」的 BFS 框架代码再说别的
+  // 将 s[j] 向上拨动⼀次 
+  // String plusOne(String s, int j) { 
+  //   char[] ch = s.toCharArray(); 
+  //   if (ch[j] == '9') 
+  //     ch[j] = '0'; 
+  //   else
+  //     ch[j] += 1; 
+  //   return new String(ch); 
+  // }
+  // // 将 s[i] 向下拨动⼀次
+  // String minusOne(String s, int j) { 
+  //   char[] ch = s.toCharArray(); 
+  //   if (ch[j] == '0') 
+  //     ch[j] = '9'; 
+  //   else
+  //     ch[j] -= 1; 
+  //   return new String(ch); 
+  // }
+  // // BFS 框架，打印出所有可能的密码
+  // void BFS(String target) { 
+  //   Queue<String> q = new LinkedList<>(); 
+  //   q.offer("0000"); 
+  //   while (!q.isEmpty()) {
+  //     int sz = q.size(); 
+  //     /* 将当前队列中的所有节点向周围扩散 */ 
+  //     for (int i = 0; i < sz; i++) { 
+  //       String cur = q.poll(); 
+  //       /* 判断是否到达终点 */ 
+  //       System.out.println(cur); 
+  //       /* 将⼀个节点的相邻节点加⼊队列 */ 
+  //       for (int j = 0; j < 4; j++) { 
+  //         String up = plusOne(cur, j); 
+  //         String down = minusOne(cur, j); 
+  //         q.offer(up); 
+  //         q.offer(down); 
+  //       } 
+  //     }
+  //     /* 在这⾥增加步数 */ 
+  //   }
+  //   return; 
+  // }
+  // PS：这段代码当然有很多问题，但是我们做算法题肯定不是⼀蹴⽽就的， ⽽是从简陋到完美的。不要完美主义，咱要慢慢来，好不。
+  // 这段 BFS 代码已经能够穷举所有可能的密码组合了，但是显然不能完成题 ⽬，有如下问题需要解决： 
+  // 1、会⾛回头路。⽐如说我们从 "0000" 拨到 "1000" ，但是等从队列拿出 "1000" 时，还会拨出⼀个 "0000" ，这样的话会产⽣死循环。 
+  // 2、没有终⽌条件，按照题⽬要求，我们找到 target 就应该结束并返回拨动的次数。 
+  // 3、没有对 deadends 的处理，按道理这些「死亡密码」是不能出现的，也就是说你遇到这些密码的时候需要跳过。 
+  // 如果你能够看懂上⾯那段代码，真得给你⿎掌，只要按照 BFS 框架在对应 的位置稍作修改即可修复这些问题：
+
+  // 思路见解
+  // 拿2000举例
+  // 初始化的时候将0000加入到队列和中，初始步数为0，然后判断0000不符合，则将0000的8种情况加入队列以及visited中（[1000,9000,0100,0900,0010,0090,0001,0009]），这时候让步数加1，
+  // 然后[1000,9000,0100,0900,0010,0090,0001,0009],中开始穷举，拿出来1000，然后判断不符合，然后拿到他的8种情况放到队列以及visitied([2000,1000(这个排除),1100,1900,1010,1090,1001,1009])，然后以此类推9000
+  // 0100,0900,1010,0090,0001,0009等他们的情况都放进去。这样，这一层的bfs全部遍历结束，然后步数+1变为了2，然后再拿出第一个,2000发现符合，返回步数2.
+
+  // 向上拨动
+  function plusOne(cur, j) {
+    // 将字符串变成数组
+    var arr = cur.split("");
+    if (arr[j] === '9') {
+      arr[j] = '0';
+    } else {
+      arr[j] = String(Number(arr[j]) + 1);
+    }
+    return arr.join("");
+  }
+  // 向下拨动
+  function minusOne(cur, j) {
+    // 将字符串变成数组
+    var arr = cur.split("");
+    if (arr[j] === '0') {
+      arr[j] = '9';
+    } else {
+      arr[j] = String(Number(arr[j]) - 1);
+    }
+    return arr.join("");
+  }
+  /**
+   * @param {string[]} deadends
+   * @param {string} target
+   * @return {number}
+   */
+  var openLock = function (deadends, target) {
+    // 定义dead
+    var deads = new Set();
+    for(var deadend of deadends) {
+      deads.add(deadend);
+    }
+    // 记录已经穷举过的密码，防⽌⾛回头路
+    var visited = new Set();
+    // 定义队列
+    var queue = ['0000'];
+    // 将0000后加入queue以及visited
+    visited.add('0000');
+    // 从起点开始启动广度优先搜索
+    var step = 0;
+    while(queue.length) {
+      var sz = queue.length;
+      // 将当前队列中的所有节点向周围扩散
+      for(var i = 0; i < sz; i++) {
+        // 取出队列中第一个
+        var cur = queue.shift();
+        // 判断是否到达终点以及是否在deads里
+        // 如果deads里面存在cur，则跳过，继续循环
+        if (deads.has(cur)) continue;
+        // 判断是否到达终点
+        if (cur === target) return step;
+        // 将这个节点的相邻节点(每个可以上下拨2次，四个位置也就是8次)
+        for(var j = 0; j < 4; j++) {
+          // 向上拨动
+          var up = plusOne(cur, j);
+          // 判断是否已经在visited中
+          if (!visited.has((up))) {
+            // 将得到的放入到队列，以及visited数组
+            queue.push(up);
+            visited.add(up);
+          }
+          // 向下波动
+          var down = minusOne(cur, j);
+          if (!visited.has((down))) {
+            // 将得到的放入到队列，以及visited数组
+            queue.push(down);
+            visited.add(down);
+          }
+        }
+      }
+      // 这里增加步数
+      step++;
+    }
+    // 如果穷举完都没找到⽬标密码，那就是找不到了
+    return -1;
+  };
+
+  // 双向BFS优化
+  // 你以为到这⾥ BFS 算法就结束了？恰恰相反。BFS 算法还有⼀种稍微⾼级 ⼀点的优化思路：双向 BFS，可以进⼀步提⾼算法的效率。
+  // 篇幅所限，这⾥就提⼀下区别：传统的 BFS 框架就是从起点开始向四周扩散，遇到终点时停⽌；⽽双向 BFS 则是从起点和终点同时开始扩散，当两边有交集的时候停⽌。
+  // 为什么这样能够能够提升效率呢？其实从 Big O 表⽰法分析算法复杂度的 话，它俩的最坏复杂度都是 O(N) ，但是实际上双向 BFS 确实会快⼀些，
+  // 图⽰中的树形结构，如果终点在最底部，按照传统 BFS 算法的策略，会把 整棵树的节点都搜索⼀遍，最后找到 target ；⽽双向 BFS 其实只遍历了 半棵树就出现了交集，也就是找到了最短距离。
+  // 从这个例⼦可以直观地感受到，双向 BFS 是要⽐传统 BFS ⾼效的。
+  // 不过，双向 BFS 也有局限，因为你必须知道终点在哪⾥。⽐如我们刚才讨 论的⼆叉树最⼩⾼度的问题，你⼀开始根本就不知道终点在哪⾥，也就⽆法 使⽤双向 BFS；
+  // 但是第⼆个密码锁的问题，是可以使⽤双向 BFS 算法来提 ⾼效率的，代码稍加修改即可：
+  function plusOne(cur, j) {
+    // 将字符串变成数组
+    var arr = cur.split("");
+    if (arr[j] === '9') {
+      arr[j] = '0';
+    } else {
+      arr[j] = String(Number(arr[j]) + 1);
+    }
+    return arr.join("");
+  }
+  // 向下拨动
+  function minusOne(cur, j) {
+    // 将字符串变成数组
+    var arr = cur.split("");
+    if (arr[j] === '0') {
+      arr[j] = '9';
+    } else {
+      arr[j] = String(Number(arr[j]) - 1);
+    }
+    return arr.join("");
+  }
+  /**
+   * @param {string[]} deadends
+   * @param {string} target
+   * @return {number}
+   */
+  var openLock = function (deadends, target) {
+    // 定义deads
+    var deads = new Set();
+    // deadends元素添加到deads
+    for(var deadend of deadends) {
+      deads.add(deadend);
+    }
+    // 这里不适用队列了，使用set，可以快速判断元素是否存在
+    var q1 = new Set();
+    var q2 = new Set();
+    // 定义visited来记录已经穷举过的密码，防止走回头路
+    var visited = new Set();
+    // 定义步长
+    var step = 0;
+    // 将开始和target分别放入到q1，q2
+    q1.add("0000");
+    q2.add(target);
+    // 开启循环
+    while(q1.size != 0 && q2.size != 0) {
+      // 哈希集合在遍历的过程中不能修改，⽤ temp 存储扩散结果
+      var temp = new Set();
+      // 将q1中的所有节点向周围扩散
+      for(var cur of q1) {
+        // 判断是否到达终点
+        if (deads.has(cur)) {
+          continue;
+        }
+        // 如果q2跟q1有了交集，就直接返回
+        if (q2.has(cur)) {
+          return step;
+        }
+        // 将cur添加到visited
+        visited.add(cur);
+        /* 将⼀个节点的未遍历相邻节点加⼊集合 */
+        for(var j = 0; j < 4; j++) {
+          var up = plusOne(cur, j);
+          // 如果visited里有就不需要添加
+          if (!visited.has(up)) {
+            temp.add(up);
+          }
+          var down = minusOne(cur, j);
+          // 如果visited里有就不需要添加
+          if (!visited.has(down)) {
+            temp.add(down);
+          }
+        }
+      }
+      // 这里增加步数
+      step++;
+      // temp相当于q1
+      // 这里交换q1,q2，下一轮while就是扩散q2
+      q1 = q2;
+      q2 = temp;
+    }
+    return -1;
+  }
+  // 双向 BFS 还是遵循 BFS 算法框架的，只是不再使⽤队列，⽽是使⽤ HashSet ⽅便快速判断两个集合是否有交集。
+  // 另外的⼀个技巧点就是 while 循环的最后交换 q1 和 q2 的内容，所以只 要默认扩散 q1 就相当于轮流扩散 q1 和 q2 。
+  // 其实双向 BFS 还有⼀个优化，就是在 while 循环开始时做⼀个判断：
+  // ... 
+  // while (!q1.isEmpty() && !q2.isEmpty()) {
+  //   if (q1.size() > q2.size()) { 
+  //   // 交换 q1 和 q2 
+  //   temp = q1; 
+  //   q1 = q2; 
+  //   q2 = temp;  
+  // }
+  // ...
+  // 为什么这是⼀个优化呢？ 
+  // 因为按照 BFS 的逻辑，队列（集合）中的元素越多，扩散之后新的队列 （集合）中的元素就越多；在双向 BFS 算法中，如果我们每次都选择⼀个 较⼩的集合进⾏扩散，那么占⽤的空间增⻓速度就会慢⼀些，效率就会⾼⼀ 些。
+  // 不过话说回来，⽆论传统 BFS 还是双向 BFS，⽆论做不做优化，从 Big O 衡量标准来看，时间复杂度都是⼀样的，只能说双向 BFS 是⼀种 trick，算 法运⾏的速度会相对快⼀点，掌握不掌握其实都⽆所谓。
+  // 最关键的是把 BFS 通⽤框架记下来，反正所有 BFS 算法都可以⽤它套出解法。
+</script>
+</html>
