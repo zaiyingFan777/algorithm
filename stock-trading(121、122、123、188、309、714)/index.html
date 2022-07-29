@@ -360,7 +360,7 @@
         if (i - 1 == -1) {
           // base case
           // dp[0][2][0] = max(dp[-1][2][0], dp[-1][2][1] + prices[0]); // max(0, -Infinity + prices[0])
-          // dp[0][2][1] = max(dp[-1][2][1], dp[-1][1][0] - prices[0]); // dp[-1][0][0] -1天没交易肯定为0
+          // dp[0][2][1] = max(dp[-1][2][1], dp[-1][1][0] - prices[0]); // dp[-1][1][0] -1天没交易肯定为0
           //             = max(-infinity, 0 - prices[0] = -prices[0]);
           // dp[0][1][0] = max(dp[-1][1][0], dp[-1][1][1] + prices[0]); // max(0, -Infinity + prices[0])
           // dp[0][1][1] = max(dp[-1][1][1], dp[-1][0][0] - prices[0]); // dp[-1][0][0] -1天没交易肯定为0
@@ -369,8 +369,8 @@
           dp[i][k][1] = -prices[i]; 
           continue;
         }
-        dp[i][k][0] = Math.max(dp[i-1][k][0], dp[i-1][k][1] + prices[i]);
-        dp[i][k][1] = Math.max(dp[i-1][k][1], dp[i-1][k-1][0] - prices[i]);
+        dp[i][k][0] = Math.max(dp[i-1][k][0], dp[i-1][k][1] + prices[i]); // dp[1][2][0] = max(dp[0][2][0], dp[0][2][1] + prices[i])    // dp[1][1][0] = max(dp[0][1][0], dp[0][1][1] + prices[i])
+        dp[i][k][1] = Math.max(dp[i-1][k][1], dp[i-1][k-1][0] - prices[i]); // dp[1][2][1] = max(dp[0][2][1], dp[0][1][0] - prices[i])  // dp[1][1][1] = max(dp[0][1][1], dp[0][0][0] - prices[i])
       }
     }
     // 这里得返回最后一天，交易了最大次数，并且手里没有股票
