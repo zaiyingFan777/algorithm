@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 72. 编辑距离
+  // 给你两个单词 word1 和 word2， 请返回将 word1 转换成 word2 所使用的最少操作数  。
+  // 你可以对一个单词进行如下三种操作：
+  // 插入一个字符
+  // 删除一个字符
+  // 替换一个字符
+  //  
+  // 示例 1：
+  // 输入：word1 = "horse", word2 = "ros"
+  // 输出：3
+  // 解释：
+  // horse -> rorse (将 'h' 替换为 'r')
+  // rorse -> rose (删除 'r')
+  // rose -> ros (删除 'e')
+
+  // 示例 2：
+  // 输入：word1 = "intention", word2 = "execution"
+  // 输出：5
+  // 解释：
+  // intention -> inention (删除 't')
+  // inention -> enention (将 'i' 替换为 'e')
+  // enention -> exention (将 'n' 替换为 'x')
+  // exention -> exection (将 'n' 替换为 'c')
+  // exection -> execution (插入 'u')
+  //  
+  // 提示：
+
+  // 0 <= word1.length, word2.length <= 500
+  // word1 和 word2 由小写英文字母组成
+
+  // 一、无任何优化版本，超时
+  /**
+   * @param {string} word1
+   * @param {string} word2
+   * @return {number}
+   */
+  var minDistance = function (word1, word2) {
+    // 初始化两个指针从字符串末尾逐步缩小规模到字符串最前面
+    // 定义dp函数：返回s1[0...i]和s2[0...j]的最小编辑距离
+    var dp = function (i, j) {
+      // base case，当i或者j为-1即s1到头或者s2到头时,
+      // 假设我们让s1变为s2，如果i为-1，那就让s2剩下的字符全部插入s1
+      // 如果j走完s2了（j为-1），那就只能用删除操作把s1缩短为s2。
+      /*
+        ps: 比如s1为a，s2为bba，初始化i为0，j为2，因为s1[0]与s2[2]相等，我们跳过。
+        所以i为-1，j为1，这时候我们需要将s2剩下的字符bb插入到s1中，j为1需要插入两个return j+1
+        同理删除s1的字符返回i+1
+      */
+      if (i === -1) {
+        // 将s2剩下的字符全部插入到s1
+        return j + 1;
+      }
+      if (j === -1) {
+        // 将s1剩下的字符全部删除。
+        return i + 1;
+      }
+      if (word1.charAt(i) === word2.charAt(j)) {
+        // 如果s1[i]和s2[j]相等
+        // 跳过即可
+        return dp(i - 1, j - 1);
+      } else {
+        // 如果s1[i]和s2[j]不相等，则是取三种情况的最小值
+        // dp[i-1][j] + 1   #1 删除s1
+        // dp[i][j-1] + 1   #2 新增s1
+        // dp[i-1][j-1] + 1 #3 替换s1,s2
+        return Math.min(
+          dp(i, j - 1) + 1, // 插入
+          dp(i - 1, j) + 1, // 删除
+          dp(i - 1, j - 1) + 1, // 替换
+        )
+      }
+    }
+    return dp(word1.length - 1, word2.length - 1);
+  };
+
+  // 二、定义备忘录memo
+  // dp[i-1][j] + 1   #1 删除s1
+  // dp[i][j-1] + 1   #2 新增s1
+  // dp[i-1][j-1] + 1 #3 替换s1,s2
+  // 由于从dp(i,j) => dp(i-1,j-1)，我们可以直接走替换#3，也可以走#2->#1或者#1->#2，存在重复
+  /**
+   * @param {string} word1
+   * @param {string} word2
+   * @return {number}
+   */
+  var minDistance = function (word1, word2) {
+    var memo = new Array(word1.length).fill(null).map(() => new Array(word2.length).fill(-1));
+    var dp = function (i, j) {
+      if (i === -1) {
+        // 将s2剩下的字符全部插入到s1
+        return j + 1;
+      }
+      if (j === -1) {
+        // 将s1剩下的字符全部删除。
+        return i + 1;
+      }
+      if (memo[i][j] !== -1) {
+        return memo[i][j];
+      }
+      if (word1.charAt(i) === word2.charAt(j)) {
+        // 如果s1[i]和s2[j]相等
+        // 跳过即可
+        memo[i][j] = dp(i - 1, j - 1);
+      } else {
+        memo[i][j] = Math.min(
+          dp(i, j - 1) + 1, // 插入
+          dp(i - 1, j) + 1, // 删除
+          dp(i - 1, j - 1) + 1, // 替换
+        )
+      }
+      return memo[i][j];
+    }
+    return dp(word1.length - 1, word2.length - 1);
+  };
+
+
+  // 三、dp table
+  /**
+   * @param {string} word1
+   * @param {string} word2
+   * @return {number}
+   */
+  var minDistance = function (word1, word2) {
+    // 定义dp table我们需要定义数组的长度为字符串长度+1
+    var dp = new Array(word1.length + 1).fill(null).map(() => new Array(word2.length + 1).fill(0));
+    // 定义base case 
+    // dp[...][0]为""到s1需要的操作步骤，都为新增1-s1.length
+    for (var i = 1; i <= word1.length; i++) {
+      dp[i][0] = i;
+    }
+    // dp[0][...]为""到s2需要的操作步骤，都为新增1-s2.length
+    for (var j = 1; j <= word2.length; j++) {
+      dp[0][j] = j;
+    }
+    // 二维数组的两层循环
+    for (var i = 1; i <= word1.length; i++) {
+      for(var j = 1; j <= word2.length; j++) {
+        // 因为我们定义数组为s1s2.length+1
+        if (word1.charAt(i-1) === word2.charAt(j-1)) {
+          // 相等，跳过
+          dp[i][j] = dp[i-1][j-1];
+        } else {
+          // 不相等，三种情况找最小值
+          dp[i][j] = Math.min(
+            dp[i-1][j] + 1,    // 删除
+            dp[i][j-1] + 1,    // 插入
+            dp[i-1][j-1] + 1,  // 替换
+          );
+        }
+      }
+    }
+    return dp[word1.length][word2.length]
+  }
+</script>
+
+</html>
