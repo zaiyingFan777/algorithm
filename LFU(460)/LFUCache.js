@@ -49,6 +49,7 @@
 // 最多调用 2 * 105 次 get 和 put 方法
 
 // 我们这里用set，set是有序的
+// java的hashset是无序的
 
 /**
  * @param {number} capacity
