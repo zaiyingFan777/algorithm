@@ -1,0 +1,2 @@
+计算start到end的mid值的三种计算方式
+1.Math.floor((start+end)/2) 2.((end - start) >> 1) + start; 3.(start + end) >> 1
