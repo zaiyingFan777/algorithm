@@ -39,27 +39,52 @@
  * @param {number} k
  * @return {number[]}
  */
+// var maxSlidingWindow = function(nums, k) {
+//   // 用数组模拟单调队列
+//   var window = [];
+//   // 结果数组
+//   var res = [];
+//   for(var i = 0; i < nums.length; i++) {
+//     if (i < k - 1) {
+//       // window的前k-1个元素
+//       while(window.length !== 0 && window[window.length - 1] < nums[i]) {
+//         // 弹出队列的最后一个
+//         window.pop();
+//       }
+//       window.push(nums[i]);
+//     } else {
+//       // window的第k个元素
+//       // 先加入到单调队列中
+//       while(window.length !== 0 && window[window.length - 1] < nums[i]) {
+//         // 弹出队列的最后一个
+//         window.pop();
+//       }
+//       window.push(nums[i]);
+//       // 取出最大的也就是window的对头
+//       res.push(window[0]);
+//       // 在window中移除Nums[i]，为了i++后的元素能够加入到window中，腾出位置
+//       // 如果nums[i-k+1](窗口的第一个元素)与window[0]相等，则去掉window的第一个
+//       if (nums[i-k+1] === window[0]) {
+//         window.shift();
+//       }
+//     }
+//   }
+//   return res;
+// };
+
 var maxSlidingWindow = function(nums, k) {
   // 用数组模拟单调队列
   var window = [];
   // 结果数组
   var res = [];
   for(var i = 0; i < nums.length; i++) {
-    if (i < k - 1) {
-      // window的前k-1个元素
-      while(window.length !== 0 && window[window.length - 1] < nums[i]) {
-        // 弹出队列的最后一个
-        window.pop();
-      }
-      window.push(nums[i]);
-    } else {
-      // window的第k个元素
-      // 先加入到单调队列中
-      while(window.length !== 0 && window[window.length - 1] < nums[i]) {
-        // 弹出队列的最后一个
-        window.pop();
-      }
-      window.push(nums[i]);
+    // window的前k-1个元素
+    while(window.length !== 0 && window[window.length - 1] < nums[i]) {
+      // 弹出队列的最后一个
+      window.pop();
+    }
+    window.push(nums[i]);
+    if (i >= k - 1) {
       // 取出最大的也就是window的对头
       res.push(window[0]);
       // 在window中移除Nums[i]，为了i++后的元素能够加入到window中，腾出位置
