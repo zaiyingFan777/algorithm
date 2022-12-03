@@ -61,7 +61,7 @@ ListNode deleteDuplicates(ListNode head) {
     fast = fast.next;
   }
   // 断开与后面重复元素的链接
-  slow.next = null;
+   .next = null;
   return head;
 }
 ```
