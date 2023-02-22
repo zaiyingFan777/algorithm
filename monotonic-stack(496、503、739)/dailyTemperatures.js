@@ -41,3 +41,43 @@ var dailyTemperatures = function(temperatures) {
   }
   return res;
 };
+
+// 2023/2/22
+// 思路：单调栈、之前单调栈存元素，我们这次可以存下标(更明了的就是存对象，val: nums[i]，index: i)
+var dailyTemperatures = function(temperatures) {
+  var n = temperatures.length;
+  // 存储下标
+  var greater = new Array(n).fill(0);
+  // 单调栈
+  var stack = [];
+  for(var i = n - 1; i >= 0; i--) {
+    while(stack.length && temperatures[stack[stack.length - 1]] <= temperatures[i]) {
+      stack.pop();
+    }
+    greater[i] = stack.length ? (stack[stack.length - 1] - i) : 0;
+    // 将下标添加到栈中
+    stack.push(i);
+  }
+  return greater;
+}
+
+// 存对象，牺牲部分空间复杂度，让逻辑更清晰。
+var dailyTemperatures = function(temperatures) {
+  var n = temperatures.length;
+  // 存储下标
+  var greater = new Array(n).fill(0);
+  // 单调栈
+  var stack = [];
+  for(var i = n - 1; i >= 0; i--) {
+    while(stack.length && stack[stack.length - 1].val <= temperatures[i]) {
+      stack.pop();
+    }
+    greater[i] = stack.length ? (stack[stack.length - 1].index - i) : 0;
+    // 将下标添加到栈中
+    stack.push({
+      val: temperatures[i],
+      index: i
+    });
+  }
+  return greater;
+}

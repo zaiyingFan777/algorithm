@@ -69,3 +69,78 @@ var nextGreaterElement = function(nums1, nums2) {
   }
   return res;
 };
+
+// 2023/2/22
+// 我第一思路: 但是我们遍历nums1的时候，通过nums2.indexOf(nums1[i])去找nums1[i]在nums2的下标的时候本身就需要循环，indexOf我认为也是循环去找的下标，其实也是很费时的
+var nextGreaterElement = function(nums1, nums2) {
+  // 获取每个数组元素下一个大元素的方法
+  // 单调栈：解决下一个更大元素的问题
+  // 思路：栈，先进后出，我们从数组第一位开始往后遍历，找到这个元素下一个更大的元素，如果我们反向遍历数组nums，将nums[i]放到栈中，
+  // 因为是后面的先放到栈底了，所以对于i-1去看i的时候就是顺序去找下一个更大的元素。
+  var nextGreaterElement = function(nums) {
+    var n = nums.length;
+    // 结果数组
+    var res = new Array(nums.length).fill(0);
+    // 单调栈
+    var stack = [];
+    // 倒着入栈
+    for(var i = n-1; i >= 0; i--) {
+      // 当栈不为空，并且栈顶的元素小于等于nums[i]
+      while(stack.length && stack[stack.length - 1] <= nums[i]) {
+        // 矮个子移出去
+        stack.pop();
+      }
+      // 如果栈为空返回-1，说明后面没有更大的元素
+      res[i] = stack.length === 0 ? -1 : stack[stack.length - 1];
+      // nums[i]入栈
+      stack.push(nums[i]);
+    }
+    return res;
+  }
+  var res = new Array(nums1.length).fill(0);
+  // 先找到nums2数组每个元素下一个最大元素的集合
+  var greater = nextGreaterElement(nums2);
+  // 遍历nums1，
+  for(var i = 0; i < nums1.length; i++) {
+    // 通过nums2.indexOf(nums1[i])找到nums1[i]在Nums2中的下标，然后在greater[找到的下表]赋值给res[i]即可
+    res[i] = greater[nums2.indexOf(nums1[i])]
+  }
+  return res;
+}
+
+// 用空间换时间
+var nextGreaterElement = function(nums1, nums2) {
+  var nextGreaterElement = function(nums) {
+    var n = nums.length;
+    // 结果数组
+    var res = new Array(nums.length).fill(0);
+    // 单调栈
+    var stack = [];
+    // 倒着入栈
+    for(var i = n-1; i >= 0; i--) {
+      // 当栈不为空，并且栈顶的元素小于等于nums[i]
+      while(stack.length && stack[stack.length - 1] <= nums[i]) {
+        // 矮个子移出去
+        stack.pop();
+      }
+      // 如果栈为空返回-1，说明后面没有更大的元素
+      res[i] = stack.length === 0 ? -1 : stack[stack.length - 1];
+      // nums[i]入栈
+      stack.push(nums[i]);
+    }
+    return res;
+  }
+  var res = new Array(nums1.length).fill(0);
+  // 保存nums2下一个更大元素的集合
+  var greater = nextGreaterElement(nums2);
+  // 定义map，将Nums2中每个元素为key，每个元素对应的下个最大元素为value存到map里
+  var greaterMap = new Map();
+  for(var i = 0; i < nums2.length; i++) {
+    greaterMap.set(nums2[i], greater[i]);
+  }
+  // 遍历nums1，去greater中找nums1[i]对应的值，存到数组里
+  for(var j = 0; j < nums1.length; j++) {
+    res[j] = greaterMap.get(nums1[j]);
+  }
+  return res;
+}

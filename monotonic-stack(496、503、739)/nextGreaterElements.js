@@ -52,3 +52,33 @@ var nextGreaterElements = function(nums) {
   }
   return res;
 };
+
+// 2023/2/22
+// 环形数组没想到怎么处理
+// 如何处理循环数组
+// var arr = [1,2,3,4,5];
+// var n = arr.length, index = 0;
+// while(true) {
+//   // 在环形数组中转圈
+//   console.log(arr[index % n]);
+//   index++;
+// }
+// 处理环形数组，可以构造一个双倍长度的数组，然后套用算法模板，但是我们可以不用构造新数组，而是利用循数组的技巧来模拟数组长度长度翻倍的效果.
+var nextGreaterElements = function(nums) {
+  var n = nums.length;
+  var res = new Array(n).fill(0);
+  // 单调栈
+  var stack = [];
+  // 把循环的次数翻倍
+  for(var i = 2 * n - 1; i >= 0; i--) {
+    // 栈不为空且栈顶的元素小于等于nums[i]才会把栈顶删除
+    while(stack.length && stack[stack.length - 1] <= nums[i % n]) {
+      stack.pop();
+    }
+    // 如果栈为空，返回-1，否则返回栈顶
+    res[i % n] = stack.length ? stack[stack.length - 1] : -1;
+    // 将nums[i % n]入栈
+    stack.push(nums[i % n]); 
+  }
+  return res;
+}
