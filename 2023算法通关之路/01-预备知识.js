@@ -143,7 +143,7 @@ var permute = function(nums) {
 // 所以 partition 函数干的事情，其实就是把 nums[p] 这个元素排好序了。
 // 一个元素被排好序了，然后呢？你再把剩下的元素排好序不就得了。
 // 剩下的元素有哪些？左边一坨，右边一坨，去吧，对子数组进行递归，用 partition 函数把剩下的元素也排好序。
-function quickSork(nums) {
+function quickSort(nums) {
   sort(nums, 0, nums.length - 1);
   return nums;
 }
