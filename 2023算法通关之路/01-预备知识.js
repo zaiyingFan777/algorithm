@@ -132,3 +132,67 @@ var permute = function(nums) {
   backtrack(nums);
   return res;
 }
+
+// 快速排序
+// 先选择元素，再排序，类似于二叉树的前序遍历
+// 并归排序
+// 快速排序，先处理数组再递归，类似于二叉树的后序遍历
+// 思路：快速排序是先将一个元素排好序，然后再将剩下的元素排好序
+// 快速排序的核心无疑是 partition 函数， partition 函数的作用是在 nums[lo..hi] 中寻找一个分界点 p，通过交换元素使得 nums[lo..p-1] 都小于等于 nums[p]，且 nums[p+1..hi] 都大于 nums[p]：
+// 一个元素左边的元素都比它小，右边的元素都比它大，啥意思？不就是它自己已经被放到正确的位置上了吗？
+// 所以 partition 函数干的事情，其实就是把 nums[p] 这个元素排好序了。
+// 一个元素被排好序了，然后呢？你再把剩下的元素排好序不就得了。
+// 剩下的元素有哪些？左边一坨，右边一坨，去吧，对子数组进行递归，用 partition 函数把剩下的元素也排好序。
+function quickSork(nums) {
+  sort(nums, 0, nums.length - 1);
+  return nums;
+}
+
+function sort(nums, lo, hi) {
+  // 出口
+  if (lo >= hi) return;
+  // 先找一个分界点P，使得nums[lo..p-1]小于等于nums[p]，且nums[p+1..hi]都大于nums[p]
+  var p = partition(nums, lo, hi);
+  // 小于nums[p]的排序
+  sort(nums, lo, p - 1);
+  // 大于nums[p]的排序
+  sort(nums, p + 1, hi);
+}
+
+function partition(nums, lo, hi) {
+  console.log(lo, hi)
+  // 双指针的形式
+  var i = lo, j = hi + 1;
+  var v = nums[lo];
+  // 一直遍历，如果i < j，我们则将比v小的，与比v大的换位置，
+  // 如果i >= j，则退出此轮循环
+  while(true) {
+    // v的左边区间: nums[i] < v，如果nums[i] >= v，则退出循环，找到了v右边数组的元素
+    while(nums[++i] < v) {
+      if (i === hi) {
+        break;
+      }
+    }
+    // v的右边区间: v < nums[i]，如果v >= nums[i]，则退出循环，找到了v左边数组的元素
+    while(nums[--j] > v) {
+      if (j === lo) {
+        break;
+      }
+    }
+    // 如果i >= j ，说明右侧区间与左侧区间重复了，j为左边界的最右边的值
+    // 比如[12,1,2];i=0;j=3;v=12; 第一轮i=2;j=2;如果不跳出循环=>nums:[12,1,2],++i变为了3(undefined<v=>false),--j(j=1)(1>12=>false), 3>1，然后退出循环,交换=>[1,12,2]这样肯定不对，
+    // 我们期望12左边都小于12，12右侧都大于12
+    if (i >= j) {
+      break;
+    }
+    // 如果i < j，则交换两边区间的值
+    var temp = nums[i];
+    nums[i] = nums[j];
+    nums[j] = temp;
+  }
+  // lo与j(左边界的最右边的值)交换
+  var temp = nums[lo];
+  nums[lo] = nums[j];
+  nums[j] = temp;
+  return j;
+}
