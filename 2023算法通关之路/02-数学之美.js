@@ -524,3 +524,316 @@ var maxSubArray = function(nums) {
   }
   return res;
 }
+
+// 179-largestNumber
+// 示例 2：输入：nums = [3,30,34,5,9] 输出："9534330"
+// 思路：这道题其实是排序题目的变种，是一道披着数学外衣的排序题。
+// 首先我们要知道一个数学常识。
+// 1．如果两个数位数不同，那么位数大的数更大。
+// 2．如果两个数位数相同，比如两个数123a456和123b456，如果a>b，那么123a456大于123b456，否则123a456小于或等于123b456。也就是说，两个相同位数的数的大小关系取决于第一个不同的数字的大小。
+// 这道题由于总的位数是确定的，就是数组全部位数之和，因此我们的入手点就是上面提到的第2点，即越高位的数字越大越好，但是这里需要考虑特殊情况，题目给出的测试用例就能够很好地说明问题。
+// 示例2中按降序排序得到的数是9534303，然而交换3和30的位置可以得到正确答案9534330，因此，在排序的比较过程中，我们需要自定义排序的策略，即自己决定哪个元素排在前面。一种方式是将比较元素
+// （即题目中的非负整数）转化为字符串，然后用字符串的比较即可避免上述问题。比如上述例子中的3和30，按照拼接后的字符串比较'303'和'330'哪个大，从而决定谁排在前面就好了。
+// ps: "3" < "30" 因此如果单纯的按照字符串比较 肯定是 303 但是 330更大，因此我们需要自定义一下比较规则
+// ps: 字符串比较比如 < > 或者 a.localeCompare(b)(前面的大返回1后面的大返回-1相同返回0)，字符串比较是按顺序比较的 比如 "9" 与 "31" 先比较第一位9>3然后得到 "9" > "31"为true
+// 如果是"3"与"31"比较 第一位相同比较第二位 3无第二位所以'3' < '31'
+// 这就是需要自定义规则
+// const arr2 = [
+//   {value: 1, name: 'a'},
+//   {value: 3, name: 'b'},
+//   {value: 2, name: 'c'},
+//   {value: -1, name: 'd'}
+// ]
+// // 从小到大排序
+// function compareNum(a, b) {
+//   if (a.value - b.value < 0) {
+//     return -1
+//   } else if (a.value == b.value) {
+//     return 0
+//   } else {
+//     return 1
+//   }
+// }
+// // 等价于
+// // function compareNum(a, b) {
+// //   return a.value - b.value
+// // }
+// arr2.sort(compareNum)
+// console.log(arr2) // [-1,1,2,3] 
+// 倒叙排序
+// const arr2 = [
+//   {value: 1, name: 'a'},
+//   {value: 3, name: 'b'},
+//   {value: 2, name: 'c'},
+//   {value: -1, name: 'd'}
+// ]
+// // 从小到大排序
+// function compareNum(a, b) {
+//   // if (a.value - b.value < 0) {
+//   //   return 1
+//   // } else if (a.value == b.value) {
+//   //   return 0
+//   // } else {
+//   //   return -1
+//   // }
+//   if (a.value - b.value < 0) {
+//     return 1
+//   } else {
+//     return -1
+//   }
+// }
+// // 等价于
+// // function compareNum(a, b) {
+// //   return b.value - a.value
+// // }
+// arr2.sort(compareNum)
+// console.log(arr2) // [3,2,1,-1] 
+// 复杂度分析
+// 时间复杂度：这里总的时间复杂度是由排序决定的，因此这种算法的时间复杂度为O(nlogn)，其中n为数组长度。排序算法导致
+// 空间复杂度：由于我们将输入转化成了字符串数组，因此这里的空间复杂度为O(n)，其中n为数组长度。
+/**
+ * @param {number[]} nums
+ * @return {string}
+ */
+var largestNumber = function(nums) {
+  // var compareNum = function(a, b) {
+  //   var strA = a.toString(), strB = b.toString();
+  //   // 避免直接字符串比较导致'3' < '30', 从而导致'303'而不是'330'
+  //   // 因此自定义规则 让 strA + strB 与 strB + strA 这样 就是比较'330'与'303'了
+  //   if (strA + strB < strB + strA) {
+  //     // 倒序排序排列，正常如果a<b我们返回-1就是正序排序，如果是返回1那就是倒序排序
+  //     return 1;
+  //   } else {
+  //     // 将相等的情况合并到 这里 效果一样
+  //     return -1;
+  //   }
+  // }
+  // var compareNum = function(a, b) {
+  //   var strA = a.toString(), strB = b.toString();
+  //   // 避免直接字符串比较导致'3' < '30', 从而导致'303'而不是'330'
+  //   // 因此自定义规则 让 strA + strB 与 strB + strA 这样 就是比较'330'与'303'了
+  //   // 正常的情况 '4'与'5'比较 '45' < '54'这是满足比较条件的
+  //   // 因此不能单独的直接比较字符串
+  //   if (strA + strB < strB + strA) {
+  //     // 倒序排序排列，正常如果a<b我们返回-1就是正序排序，如果是返回1那就是倒序排序
+  //     return 1;
+  //   } else if (strA + strB > strB + strA) {
+  //     return -1;
+  //   } else if (strA + strB === strB + strA) {
+  //     return 0;
+  //   }
+  // }
+  var compareNum = function(a, b) {
+    // 我们可以先将数字数组转化为字符串数组，然后排序，这个过程需要定制比较逻辑
+    var strA = a.toString(), strB = b.toString();
+    // 正序排序就是(strA + strB) - (strB + strA)
+    // 倒序排序
+    return (strB + strA) - (strA + strB); 
+  }
+  // 对nums进行倒序排序
+  nums.sort(compareNum);
+  // 如果数组第一位是0，排除[0,0]这样的情况直接返回0
+  if (nums[0] === 0) return '0';
+  return nums.join(''); // 这样['1','2']返回'12'如果是nums.join()返回'1,2'
+};
+
+// 166-fractionToDecimal
+// 长除法
+// 思路：
+// 将分数转成整数或小数，做法是计算分子和分母相除的结果。可能的结果有三种：整数、有限小数、无限循环小数。
+// 首先需要明确的一点是，只要是能够被分数表示的数都是有理数。还有一点需要了解，有理数只能是有限数或无限循环小数，因此
+// 题目中不可能出现无限不循环的情况，也就是说问题是可解的。这道题目的难点是找出循环节，一旦找到循环节，剩下要做的就是简单地
+// 将商的整数部分和循环节（如果存在）进行拼接。
+
+// 计算长除法时，首先计算结果的整数部分，将以下部分依次拼接到结果中：
+// 1.如果结果是负数则将负号拼接到结果中，如果结果是正数则跳过这一步；
+// 2.将整数部分拼接到结果中；
+// 3.将小数点拼接到结果中。
+// 完成上述拼接之后，根据余数计算小数部分。
+// 计算小数部分时，每次将余数乘以 10，然后计算小数的下一位数字，并得到新的余数。重复上述操作直到余数变成 0 或者找到循环节。
+// 为了厘清思路，不妨从几个寻常的例子入手。既然问题的难点是找到循环节，那么我们直接来看一个有循环节的例子：numerator=2，denominator=3。
+// 步骤1：让分子除以分母。
+// 步骤2：如果余数是0，则直接退出，否则执行步骤3。
+// 步骤3：把余数乘以10作为分子，分母不变，然后继续执行步骤1。
+
+// 如何找到循环节？注意对于相同的余数，计算得到的小数的下一位数字一定是相同的，因此如果计算过程中发现某一位的余数在之前已经出现过，则为找到循环节。
+// 为了记录每个余数是否已经出现过，需要使用哈希表存储每个余数在小数部分第一次出现的下标。
+
+// 假设在计算小数部分的第 i 位之前，余数为 remainderi，则在计算小数部分的第 i 位之后，余数为 remainderi+1。
+
+// 假设存在下标 j 和 k，满足 j≤k 且 remainderj = remainderk+1，则小数部分的第 k+1 位和小数部分的第 j 位相同，因此小数部分的第 j 位到第 k 位是一个循环节。
+// 在计算小数部分的第 k 位之后就会发现这个循环节的存在，因此在小数部分的第 j 位之前加上左括号，在小数部分的末尾（即第 k 位之后）加上右括号。
+// 见图 02-fractionToDecimal-01.jpg与02-fractionToDecimal-02.jpg
+
+// 复杂度分析
+// 时间复杂度：时间复杂度：由于fractionPart数组的长度最多为denominator-1，我们最多执行denominator-1次循环体，因此时间复杂度为O(denominator)。
+// 空间复杂度：由于fractionPart数组的长度最多为denominator-1，因此空间复杂度为(denominator)。
+
+var fractionToDecimal = function(numerator, denominator) {
+  // 我们先判断是否能整除，如果可以整除直接返回结果
+  if (numerator % denominator === 0) {
+    // return '' + numerator / denominator;
+    return '' + Math.floor(numerator / denominator);
+  }
+
+  // 不能整除，将整数部分、小数点、括号、循环体等放到sb数组里
+  var sb = [];
+  // 1.最终符号
+  // 判断两个数的商的符号 用下面这样
+  if (numerator < 0 ^ denominator < 0) {
+    // var a = 1, b = 2; a < 0 ^ b < 0 => 0 (false)
+    // var a = 1, b = -2; a < 0 ^ b < 0 => 1 (true)
+    // var a = -1, b = -2; a < 0 ^ b < 0 => 0 (false)
+    // var a = 0, b = 0; a < 0 ^ b < 0 => 0 (false)
+    // 当结果为负数
+    sb.push('-');
+  }
+  // 2.整数部分，这里我们不应该带符号
+  numerator = Math.abs(numerator);
+  denominator = Math.abs(denominator);
+  var integerPart = Math.floor(numerator / denominator);
+  sb.push(integerPart);
+  // 小数点
+  sb.push('.');
+  // 3.小数部分，这里我们用一个map来记录当前余数，当下标 j <= k，且remainderj = remainderk+1, 
+  // 则小数部分的第 k+1 位和小数部分的第 j 位相同，因此小数部分的第 j 位到第 k 位是一个循环节。
+  // 这里面remainder(i)：假设在计算小数部分的第i位之前，余数为remainder(i)
+  // key为余数，val为余数下标
+  var fractionPart = []; // fraction分数
+  var remainderIndex = 0;
+  var remainderIndexMap = new Map();
+  let remainder = numerator % denominator;
+  // 如何根据余数求小数 比如 2/3(余数=2%3第一位小数位，(余数*10,20)/3)
+  while(remainder !== 0 && !remainderIndexMap.has(remainder)) {
+    // 将余数存到map中
+    remainderIndexMap.set(remainder, remainderIndex);
+    // 余数不为0，我们需要计算小数部分，如何计算 让余数*10 / 分母
+    fractionPart.push(Math.floor((remainder * 10) / denominator));
+    // 重新计算remainder
+    remainder = (remainder * 10) % denominator;
+    remainderIndex++;
+  }
+  // 有循环节，添加括号
+  if (remainder !== 0) {
+    // 如果是2.2(189)，我们上述remainder最后一次被计算出来也是1，
+    // 获取到第一个1的index
+    var insertIndex = remainderIndexMap.get(remainder);
+    fractionPart.splice(insertIndex, 0, '(');
+    fractionPart.push(')');
+  }
+  sb = sb.concat(fractionPart);
+  return sb.join('');
+}
+
+// ps: 数学知识 若整数b除以非零整数a，商为整数，且余数为零，我们就说b能被a整除（或说a能整除b），b为被除数，a为除数，即a|b（“|”是整除符号），读作“a整除b”或“b能被a整除”
+// 368-largestDivisibleSubset最大整除子集
+// 思路
+// 符合直觉的想法是求出所有的子集，一共是2^n个，然后判断是否满足“整除子集”的条件，并最终取出最大的即可，但这样做的复杂度非常高，我们来思考如何优化。
+// 首先明确一点：如果存在一个整除子集S及整数x，x能够被S中最大的数整除，那么将x加入S就可以组成一个更大的整除子集。这个其实就是递推公式，因此可以维护一个集合，集合的key是整除子集中最
+// 大的数，value是整除子集S本身。具体算法如下。
+// 1.对数组进行排序，这里不妨进行一次升序排序。
+// 2.遍历元素，对于数组中的每一项x，检查x能否被S中的每一项S[d]整除，也就是检查x % d是否等于0。
+// 3.如果可以，则说明最大整除子集可以+1，我们找到的新的最大整除子集为S[d]+x。如果不可以，什么都不需要做。
+// 4.当S全部遍历完成时，我们找出S[d]+x中的最大者，将其写回S[x]。
+// 5.最后取S集合中的长度最大值即可。
+
+// 复杂度分析
+// 时间复杂度：由于subSetMap会在循环的过程逐渐增大，最大会增大到n，因此时间复杂度为O(n^2)，其中n为数组长度。
+// 空间复杂度：我们使用的额外空间有subSetMap和newMaxSubSet，其中newMaxSubSet被声明一次，而subSetMap中的key共有n+1个，value为一个set，set的平均长度为n，因此总的空间复杂度为O(n^2)，其中n为数组长度。
+
+/**
+ * @param {number[]} nums
+ * @return {number[]}
+ */
+var largestDivisibleSubset = function(nums) {
+  // 先对nums升序排序
+  nums.sort((a, b) => a - b);
+  // 定义Map，key为子集最大的数，val为子集
+  var subSetMap = new Map();
+  // 初始化subSetMap，这里取-1为默认值，因为正整数 % -1都是0
+  subSetMap.set(-1, []);
+  // 定义newMaxSubSet，此数组是当前nums[i]为结尾的最长的子集
+  var newMaxSubSet;
+  // 如果存在一个整除子集S以及整数x，x能够被S中最大的数整除，那么将x加入S就可以组成一个更大的整除子集
+  for(var i = 0; i < nums.length; i++) {
+    newMaxSubSet = [];
+    // 遍历Nums元素x，检查是否能被subSetMap中的每一项s[D]整除，就是找到s中的最大值
+    for(var j of Array.from(subSetMap.keys())) { // 如果在循环for(var j of subSetMap.keys())里 给map添加元素，这时候会把新添加的也便里出来
+      if (nums[i] % j === 0) {
+        // 能被整除，则扩充该子集
+        var newSubSet = JSON.parse(JSON.stringify(subSetMap.get(j)));
+        newSubSet.push(nums[i]);
+        newMaxSubSet = newMaxSubSet.length > newSubSet.length ? newMaxSubSet : newSubSet;
+      }
+    }
+    // 将最长的子集为val，key为Nums[i]存到Map里
+    // 如果是[4,8,10,240]，当Nums[i]为240的时候，这时候mao里有-1:[]，4:[4]，8: [4, 8]，10: [10]
+    // 这里类似于贪心算法，当nums[i]为240的时候，240 % (-1,4,8,10)都为0，按照顺序newMaxSubSet会得到[240][4,240][4,8,240][10,240]
+    // 贪心一下，每次都获取长度最长的
+    subSetMap.set(nums[i], newMaxSubSet);
+  }
+  var res = [];
+  // 找到子集长度最大的
+  for(var k of subSetMap.keys()) {
+    res = res.length > subSetMap.get(k).length ? res : subSetMap.get(k);
+  }
+  return res;
+};
+
+// 1175-numPrimeArrangements(质数排列)
+// 质数是指在大于1的自然数中，除了1和它本身以外不再有其他因数的自然数
+// 1不是质数，1只有一个因数，所以它不是质数。
+// 让我们一起来回顾一下质数：质数一定是大于1的，并且不能用两个小于它的正整数的乘积来表示。
+// 索引从1开始，比如n=5，1,2,3,4,5这里面有2 3 5三个质数，索引也是12345中有3个质数，所以有多少种排列组合？
+// 排列组合数：3 * 2 * 1(3个质数) * 2 * 1(2个非质数) = 12 
+// 如何求阶乘
+// function factorial(n) {
+//   if (n === 1) {
+//     return 1;
+//   }
+//   return n * factorial(n - 1);
+// }
+
+// 复杂度分析
+// 时间复杂度：O(n^(3/2))。求 n 个数中质数个数的时间复杂度为 O(n^(3/2)), 阶乘的时间复杂度为 O(n)，总的时间复杂度为 O(n^(3/2))。
+// 空间复杂度：O(1),只用了常数空间。
+// 对于n个数每个数遍历n次，时间复杂度为n^2，但是我们判断质数的时候，大概有n个数，每次遍历n/2次，所以是 n^(3/2)
+/**
+ * @param {number} n
+ * @return {number}
+ */
+var numPrimeArrangements = function(n) {
+  // 判断是否为质数，从1开始
+  var isPrime = function(n) {
+    if (n === 1) return false;
+    for(var i = 2; i * i <= n; i++) {
+      if (n % i === 0) return false;
+    }
+    return true;
+  }
+  var mod = 10**9 + 7;
+  // 我们需要找到从1到n中有多少质数
+  var primeCounts = 0;
+  for(var i = 2; i <= n; i++) {
+    if (isPrime(i)) {
+      primeCounts++;
+    }
+  }
+  // 这里不用质数
+  var res = 1;
+  var notPrimeCounts = n - primeCounts;
+  // 阶乘
+  while(primeCounts > 0) {
+    // 为了避免数过大
+    res %= mod;
+    res *= primeCounts;
+    primeCounts--;
+  }
+  while(notPrimeCounts > 0) {
+    // 为了避免数过大
+    res %= mod;
+    res *= notPrimeCounts;
+    notPrimeCounts--;
+  }
+  return res;
+};
