@@ -396,5 +396,372 @@ var maxPathSum = function(root) {
 };
 
 // 5.4
-// 岛屿问题
-// 
+// 岛屿问题(解决方式dfs、bfs、并查集)
+// 力扣（LeetCode）中有几道题目都带着“岛屿”字眼，并且解题思路相似，因此我们将其简称为岛屿问题，这类题目同样是典型的可以用DFS和BFS来解决的题目。从数学层面来讲，本节的题目都可以转
+// 化为无向图的连通分量问题，也就是等价类问题。连通分量可以简单地理解为该分量内部任意点之间都是可以相互连通的（如果想要详细了解等价类问题，可以自行搜索）。
+
+// 5.4.1 岛屿数量
+// 200-numIslands
+// 分析
+// 题目要求计算岛屿的数量。岛的定义告诉我们岛的内部点与点之间都是相互连通的，因此，一个岛其实就是一个由点构成的无向连通子图。而求岛屿的数量，就是求整个无向图（这里将二维网格当成一
+// 个大的无向图）中的连通分量个数。当我们遇到图论中求连通分量的个数时，基本都可以使用DFS、BFS或并查集（union-find）方法来解决。下面就让我们来慢慢熟悉这一类题目的“套路”吧。
+
+// 解法一 DFS递归
+// 思路
+// 线性扫描整个二维网格，找到第一个1，然后以该节点为开始节点来启动深度优先遍历。在深度优先遍历的过程中，将每个访问过的节点标记为0。那么，在整个线性扫描过程当中，启动深度优先遍历方法
+// 的次数就是岛屿的数量。深度优先遍历的思路是沿着一个方向一直走，直到走到尽头，再尝试往其他方向搜索。对于本题而言，有4个方向：上、下、左、右。如果被访问节点的各个方向都搜索过了，则回
+// 溯到上一个节点。
+// 向4个方向延伸的代码如下。
+// r: 行，c: 列
+// function dfs(r, c) {
+//   // 原地标记已经访问过了，防止重复访问
+//   grid[r][c] = '0';
+//   // 向下延伸
+//   if (r - 1 >= 0 && grid[r - 1][c] === '1') {
+//     dfs(r - 1, c);
+//   }
+//   // 向上延伸
+//   if (r + 1 < m && grid[r + 1][c] === '1') {
+//     dfs(r + 1, c);
+//   }
+//   // 向左延伸
+//   if (c - 1 >= 0 && grid[r][c - 1] === '1') {
+//     dfs(r, c - 1);
+//   }
+//   // 向右延伸
+//   if (c + 1 < n && grid[r][c + 1] === '1') {
+//     dfs(r, c + 1);
+//   }
+// }
+// 理解了上面的内容，最终代码就不难写出来了，如下所示。
+// 复杂度分析
+// 时间复杂度：在任何情况下，算法都会搜索整个二维网格，因此时间复杂度为O(mn)。
+// 空间复杂度：在最坏情况下，整个网格均为陆地，此时深度优先遍历的深度达到mn，也就对应着最坏空间复杂度为O(mn)。
+/**
+ * @param {character[][]} grid
+ * @return {number}
+ */
+var numIslands = function(grid) {
+  var ans = 0;
+  // 找到总行、列
+  var m = grid.length, n = grid[0].length;
+  // 深度优先函数
+  var dfs = function(r, c) {
+    // 原地标记已经访问过了，防止重复访问
+    grid[r][c] = '0';
+    // 向下延伸
+    if (r - 1 >= 0 && grid[r - 1][c] === '1') {
+      dfs(r - 1, c);
+    }
+    // 向上延伸
+    if (r + 1 < m && grid[r + 1][c] === '1') {
+      dfs(r + 1, c);
+    }
+    // 向左延伸
+    if (c - 1 >= 0 && grid[r][c - 1] === '1') {
+      dfs(r, c - 1);
+    }
+    // 向右延伸
+    if (c + 1 < n && grid[r][c + 1] === '1') {
+      dfs(r, c + 1);
+    }
+  }
+  // 遍历二维数组的所有元素，当遇到有1的将他原地改为0，防止重复判断，
+  // 然后对这个1进行深度优先遍历 找他的上下左右四个方向的为1的继续进行深度优先遍历
+  // 最后进行回溯，回溯完 再次从循环体内发现有1的说明又遇到了一次岛屿
+  for(var i = 0; i < m; i++) {
+    for(var j = 0; j < n; j++) {
+      if (grid[i][j] === '1') {
+        // 遇到一个陆地说明岛屿数+1
+        ans += 1;
+        // 将陆地的上、下、左、右是1的变为0，然后再进行dfs，回溯，dfs
+        dfs(i, j);
+      }
+    }
+  }
+  return ans;
+};
+
+// 解法二 DFS迭代
+// 同样地，可以使用辅助栈将递归修改成迭代的形式。
+// 复杂度分析
+// 时间复杂度：在任何情况下，算法都会搜索整个二维网格，因此时间复杂度为O(mn)。
+// 空间复杂度：在最坏情况下，整个网格均为陆地，此时深度优先遍历的深度达到mn，也就对应着最坏空间复杂度为O(mn)，但是相对于解法一来讲，会稍微好一些，因为模拟调用栈比函数调用栈的代
+// 价更小一些。
+/**
+ * @param {character[][]} grid
+ * @return {number}
+ */
+var numIslands = function(grid) {
+  var ans = 0;
+  var m = grid.length, n = grid[0].length;
+  // 用迭代替代递归
+  var dfs = function(r, c) {
+    // 辅助栈
+    var stack = [[r, c]];
+    while(stack.length) {
+      // 从栈顶取出元素，
+      var [row, col] = stack.pop();
+      // 有可能被修改过
+      if (grid[row][col] = '1') {
+        // 将node原地标记为水
+        grid[row][col] = '0';
+      }
+      // 右、左、上、下的顺序入栈，下上左右的顺序出栈
+      // 但是这个栈的顺序并不是很重要在这个问题里
+      if (col + 1 < n && grid[row][col + 1] === '1') {
+        stack.push([row, col + 1]);
+      }
+      // 左
+      if (col - 1 >= 0 && grid[row][col - 1] === '1') {
+        stack.push([row, col - 1]);
+      }
+      // 上
+      if (row + 1 < m && grid[row + 1][col] === '1') {
+        stack.push([row + 1, col]);
+      }
+      // 下
+      if (row - 1 >= 0 && grid[row - 1][col] === '1') {
+        stack.push([row - 1, col]);
+      }
+    }
+  }
+  // 对每个元素进行dfs
+  for(var i = 0; i < m; i++) {
+    for(var j = 0; j < n; j++) {
+      if (grid[i][j] === '1') {
+        ans += 1;
+        dfs(i, j);
+      }
+    }
+  }
+  return ans;
+}
+
+// 解法三 BFS迭代
+// 思路
+// 同样地，我们可以使用广度优先遍历来解决该题，广度优先遍历通常需要辅助的队列。思路是线性扫描整个二维网格，如果一个节点
+// 中包含1，则以该节点为开始节点启动广度优先遍历。而启动广度优先遍历的次数就是岛屿的数量。
+// 具体算法如下。
+// 1.首先，将开始节点放入该队列中，然后迭代搜索队列中的每个节点。
+// 2.在迭代过程中，将当前节点符合要求的子节点放入队列中，访问完当前节点后，将该节点从队列中抛出。
+// 3.重复上述过程直到队列为空时结束。这里同样通过将1设为0来标记已访问过该节点。
+// 复杂度分析
+// 时间复杂度：在任何情况下，算法都会搜索整个二维网格，因此时间复杂度为O(mn)。
+// 空间复杂度：在最坏情况下，整个网格均为陆地，此时队列的大小可以达到min(m,n)，也就对应着最坏空间复杂度为O(min(m,n))。
+/**
+ * @param {character[][]} grid
+ * @return {number}
+ */
+var numIslands = function(grid) {
+  // 行、列
+  var m = grid.length, n = grid[0].length;
+  var ans = 0;
+  var queue = [];
+  for(var i = 0; i < m; i++) {
+    for(var j = 0; j < n; j++) {
+      if (grid[i][j] === '1') {
+        // 每一次进来岛屿数量+1
+        ans += 1;
+        // 遇到大陆，将大陆放到队列里，然后检查大陆上下左右是否有大陆，有就放入到队列里
+        queue.push([i, j]);
+        while(queue.length) { 
+          // 取出队列里的元素，将陆地变为海洋
+          var [r, c] = queue.pop();
+          grid[r][c] = '0';
+          // 下
+          if (r - 1 >= 0 && grid[r - 1][c] === '1') {
+            queue.push([r - 1, c]);
+          }
+          // 上
+          if (r + 1 < m && grid[r + 1][c] === '1') {
+            queue.push([r + 1, c]);
+          }
+          // 左
+          if (c - 1 >= 0 && grid[r][c - 1] === '1') {
+            queue.push([r, c - 1]);
+          }
+          // 右
+          if (c + 1 < n && grid[r][c + 1] === '1') {
+            queue.push([r, c + 1]);
+          }
+        }
+      }
+    }
+  }
+  return ans;
+}
+
+// 解法四 并查集
+// 思路
+// 同样地，我们也可以使用并查集代替搜索。
+// 为了求出岛屿的数量，我们可以扫描整个二维网格。如果一个位置为 1，则将其与相邻四个方向上的 1 在并查集中进行合并。
+// 最终岛屿的数量就是并查集中连通分量的数目。
+// 复杂度分析
+// 时间复杂度：在任何情况下，算法都会搜索整个二维网格，因此时间复杂度为O(mn)。
+// 空间复杂度：O(mn)，这是并查集数据结构需要的空间。
+class UF {
+  constructor(n) {
+    // n: 5 => [0,1,2,3,4]
+    this.parent = new Array(n).fill(0).map((_, i) => i);
+    // 数的个数
+    this.count = n;
+  }
+
+  // 将节点 p 和节点 q 连通
+  union(p, q) {
+    const { find, parent, count } = this;
+    const rootP = find(p);
+    const rootQ = fin(q);
+    // 已经是连通状态
+    if (rootP === rootQ) return;
+    // 将p挂在q下，但无所谓，下次find的时候会拍平整个树
+    parent[rootP] = rootQ;
+    // 两个连通分量合并成一个连通分量
+    count--;
+  }
+
+  // 判断节点 p 和节点 q 是否连通
+  connected(p, q) {
+    const { find } = this;
+    const rootP = find(p);
+    const rootQ = find(q);
+    return rootP === rootQ;
+  }
+
+  // 常规思维、需要将小的树接到大的数下面，这里不再过多阐述
+  /* 返回某个节点 x 的根节点 */
+  // find(x) {
+  //   // 根节点的 parent[x] == x
+  //   while (parent[x] != x)
+  //     x = parent[x];
+  //   return x;
+  // }
+  // 不完全拍平
+  // 0->1->2->3->4 => 
+  // 0->2 1->2 3->4 2->4
+  // find(x) {
+  //   while (parent[x] != x) {
+  //     // 这行代码进行路径压缩
+  //     parent[x] = parent[parent[x]];
+  //     x = parent[x];
+  //   }
+  //   return x;
+  // }
+  // find利用此种递归会将一颗树完全拍平
+  find(x) {
+    const { find, parent } = this;
+    if (x !== parent[x]) {
+      // 每一次都将parent[x]赋值为最终的结果，拍平的核心
+      // 0->1->2->3 => 0->3 1->3 2->3
+      parent[x] = find(parent[x]);
+    }
+    return parent[x]
+  }
+
+  // 返回图中的连通分量个数
+  _count() {
+    return this.count;
+  }
+}
+
+// 二维数组的uf
+class UF2 {
+  // grid为二维数组
+  constructor(grid) {
+    // m行、n列
+    const m = grid.length, n = grid[0].length;
+    this.count = 0;
+    this.parent = new Array(m * n).fill(0);
+    for(let i = 0; i < m; i++) {
+      for(let j = 0; j < n; j++) {
+        // 比如
+        // 1 1 1
+        // 0 1 0
+        // 1 0 0
+        // 1 0 1
+        // => parent: [0, 1, 2, 0, 4, 0, 6, 0, 0, 9, 0, 11]
+        // 将是陆地(1)的 通过i*n+j映射到1维数组里，
+        // 关键：正常我们的并查集为n, parent数组为[0,1,2,..., n-1]，这里会将陆地通过 i*n+j得出来的数字映射到parent的i*n+j下标里，看上面的例子
+        // 但是[0,0]为陆地的时候，没办法只能让他变为0(i*n+j: 0 * 3 + 0)
+        if (grid[i][j] === '1') {
+          this.parent[i * n + j] = i * n + j;
+          this.count++;
+        }
+      }
+    }
+  }
+
+  find(x) {
+    if (this.parent[x] !== x) {
+      this.parent[x] = this.find(this.parent[x]);
+    }
+    return this.parent[x];
+  }
+
+  // union(p, q) {
+  //   const rootP = this.find(p);
+  //   const rootQ = this.find(q);
+  //   // if (rootP !== rootQ) {
+  //   //   // 这段代码：将小树放到大树下面
+  //   //   if (rank[rootx] > rank[rooty]) {
+  //   //     parent[rooty] = rootx;
+  //   //   } else if (rank[rootx] < rank[rooty]) {
+  //   //       parent[rootx] = rooty;
+  //   //   } else {
+  //   //       parent[rooty] = rootx;
+  //   //       rank[rootx] += 1;
+  //   //   }
+  //   // }
+  //   // 已经是连通状态
+  //   if (rootP === rootQ) return;
+  //   // 将p挂在q下，但无所谓，下次find的时候会拍平整个树
+  //   this.parent[rootP] = rootQ;
+  //   // 两个连通分量合并成一个连通分量
+  //   this.count--;
+  // }
+  union(p, q) {
+    const rootP = this.find(p);
+    const rootQ = this.find(q);
+
+    if (rootP == rootQ)
+      return;
+
+    this.parent[rootQ] = rootP;
+    // 两个连通分量合并成一个连通分量
+    this.count--;
+  }
+}
+
+var numIslands = function(grid) {
+  const m = grid.length, n = grid[0].length;
+  // 将grid二维数组变为一维度数组的并查集
+  const uf = new UF2(grid);
+  for(let i = 0; i < m; i++) {
+    for(let j = 0; j < n; j++) {
+      if (grid[i][j] === '1') {
+        // 为了保持连通性，不能在下面的四种判断中修改grid[x][y] = '0'，否则到时候会断了连通性
+        // 原地修改grid[i][j]为海洋
+        grid[i][j] = '0';
+        // 如果i,j为陆地，检查上下左右是否有陆地的，有就连通
+        if (i - 1 >= 0 && grid[i - 1][j] === '1') {
+          // 将i,j i-1,j连通
+          uf.union(i * n + j, (i - 1) * n + j);
+        }
+        if (i + 1 < m && grid[i + 1][j] === '1') {
+          // 将i,j i-1,j连通
+          uf.union(i * n + j, (i + 1) * n + j);
+        }
+        if (j - 1 >= 0 && grid[i][j - 1] === '1') {
+          // 将i,j i-1,j连通
+          uf.union(i * n + j, i * n + (j - 1));
+        }
+        if (j + 1 < n && grid[i][j + 1] === '1') {
+          // 将i,j i-1,j连通
+          uf.union(i * n + j, i * n + (j + 1));
+        }
+      }
+    }
+  }
+  return uf.count;
+}
