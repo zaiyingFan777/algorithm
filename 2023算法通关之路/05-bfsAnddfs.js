@@ -765,3 +765,120 @@ var numIslands = function(grid) {
   }
   return uf.count;
 }
+
+// 5.4.2 岛屿数量II
+// 305-numIslands
+// 思路：
+// 本题明显是上一题的变种，我们需要动态地求出每次addLand操作之后的无向图中的连通分量。而求连通分量的数量的问题都可以通过
+// DFS、BFS或并查集来解决。首先来看DFS和BFS，任何通过DFS和BFS来解决的图类问题都有一个前提：图是被预先处理好的。而本题中的图
+// 是动态变化的，因此这时用DFS或BFS来处理效率就不那么高了。
+
+// 那么并查集呢？经过路径压缩和按秩合并的union操作只需要常数时间。而 addLand操作其实等价于union操作。那么高效的解法就显而易见了。
+// 因此，如果需要求动态变化中的图的连通分量数量，使用并查集效率更高。
+
+// 代码
+class UnionFind {
+  // grid: 网格
+  constructor(grid) {
+    // m行、n列
+    const m = grid.length, n = grid[0].length;
+    this.parent = new Array(m * n).fill(0);
+    // 连通分量的个数
+    this.count = 0;
+    // 初始化二维数组，将二维数组拍平
+    for(let i = 0; i < m; i++) {
+      for(let j = 0; j < n; j++) {
+        if (grid[i][j] === '1') {
+          this.parent[i * n + j] = i * n + j;
+          this.count++;
+        }
+      }
+    }
+  }
+  // 判断节点p和q是否连通
+  connect(p, q) {
+    const rootP = this.find(p);
+    const rootQ = this.find(q);
+    return rootP === rootQ; 
+  }
+  // find方法
+  find(x) {
+    if (x !== this.parent[x]) {
+      this.parent[x] = this.find(this.parent[x]);
+    }
+    return this.parent[x];
+  }
+  // 连通方法
+  union(p, q) {
+    const rootP = this.find(p);
+    const rootQ = this.find(q);
+    if (rootP === rootQ) return;
+    this.parent[rootP] = rootQ;
+    // 将两个连通分量合并为一个连通分量
+    this.count--;
+  }
+  getCount() {
+   return this.count; 
+  }
+  setCount(count) {
+    this.count = count;
+  }
+  // 设置parent的值
+  setParent(i, val) {
+    this.parent[i] = val;
+  }
+}
+// 上一题：我们的图是初始化好的，因此初始化uf的时候，会将grid拍平为一维数组，grid中为土地的'1'根据i*n+j映射到一维数组里
+// 这样，我们在遍历二维grid，将为'1'的变为'0'以及连通他的上下左右为土地的，最后得到的就是uf.count就是岛屿的数量.
+// 但是本题，每次从positions中取出position然后去设置位置，这是动态的。我们第一次初始化uf，这时候grid都是海洋，因此uf.count(连通量的个数为0)
+// 然后遍历所有位置，去设置uf.parent[i*n+j]，以及uf.count+1,我们再根据[i,j]去找上下左右的岛屿，去进行连通，联通后，得到这一轮的uf.count,
+
+// 时间复杂度：并查集的时间主要消耗在union和find操作上，路径压缩和按秩合并优化后的时间复杂度接近于O(1)。更加严谨的表
+// 达是O(log(m×Alpha(n)))，这里Alpha是Ackerman函数的某个反函数。但如果只有路径压缩或只有按秩合并，则两者的时间复杂度分别为O(logx)和O(logy)，x和y分别为合并与查找的次数。
+// 空间复杂度：O(mn)，这是并查集数据结构需要的空间。
+
+// return []
+var numIslands = function(m, n, positions) {
+  // 排除边界条件
+  if (m < 0 || n < 0) return [];
+  // 结果数组
+  var ans = [];
+  // 构建二维数组根据m、n
+  var grid = new Array(m).fill(null).map(_ => new Array(n).fill(0));
+  // 创建uf
+  var uf = new UnionFind(grid);
+  // 将positions里面的位置变为陆地
+  for(var position of positions) {
+    var [i, j] = position;
+    // 我们手动设置parent[i], 如果grid这个图初始化好的，那么就在new UF的时候对parent数组设置好了
+    uf.setParent(i * n + j, i * n + j);
+    // 设置的时候需要将uf.count++，因为我们初始化的时候都是海洋count为0，这里凡是陆地的我们都需要手动的增加一下count
+    uf.setCount(uf.getCount() + 1);
+    // 设置grid[i][j]为陆地
+    grid[i][j] = '1';
+    // 上下左右去寻找是否有陆地
+    if (i - 1 >= 0 && grid[i - 1][j] === '1') {
+      uf.union(i * n + j, (i - 1) * n + j);
+    }
+    if (i + 1 < m && grid[i + 1][j] === '1') {
+      uf.union(i * n + j, (i + 1) * n + j);
+    }
+    if (j - 1 >= 0 && grid[i][j - 1]) {
+      uf.union(i * n + j, i * n + (j - 1));
+    }
+    if (j + 1 < n && grid[i][j + 1]) {
+      uf.union(i * n + j, i * n + (j + 1));
+    }
+    // 找到此刻的连通分量的个数
+    ans.push(uf.getCount());
+  }
+  return ans;
+}
+
+// 总结
+// 回顾整章，DFS和BFS都属于树/图的搜索算法，两者在用于具体问题时各有优劣，具体如下。
+// 求给定图中两点之间最短路径或检验图的二分性，使用BFS更优
+// 求无向图的连通分量数量，两者差不多。
+// 两者在实现过程中使用的基础数据结构也有区别。在实际做题当中，一般使用栈来实现DFS，使用队列来实现BFS。
+// 另外，DFS和回溯算法之间的关系界线是模糊的，网上的说法也各不一样，在这里我们没必要过于纠结其精确的定义。
+// 对于DFS，另外一个知识点也是值得注意的。在二叉树中，DFS可以被分为前序遍历、中序遍历和后序遍历，并且引申出一系列相关题目。
